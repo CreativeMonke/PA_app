@@ -37,6 +37,23 @@ export interface ExamProblem {
   statement: string;
   hints: string[];
   solution: string;
+  codeTemplate?: string;
+  testCases?: TestCase[];
+}
+
+export interface TestCase {
+  label: string;
+  args: unknown[];
+  expected: unknown;
+}
+
+export interface TestResult {
+  label: string;
+  passed: boolean;
+  actual: string;
+  expected: string;
+  error?: string;
+  durationMs: number;
 }
 
 export interface PracticeExam {

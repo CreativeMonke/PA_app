@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Lightbulb, CheckCircle2 } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
+import InteractiveHelper from "@/components/practice/InteractiveHelper";
 import { useAppStore } from "@/store/useAppStore";
 import { useProgressStore } from "@/store/useProgressStore";
 import { getExamById } from "@/data/practiceExams";
@@ -115,6 +116,17 @@ export default function PracticePage() {
                   className="glass-panel p-5 prose-pa"
                   dangerouslySetInnerHTML={{ __html: markdownToHtml(problem.statement) }}
                 />
+
+                {/* Interactive code helper */}
+                {problem.codeTemplate && problem.testCases && (
+                  <div className="glass-panel p-5" style={{ borderColor: "rgba(251,191,36,0.15)" }}>
+                    <InteractiveHelper
+                      codeTemplate={problem.codeTemplate}
+                      testCases={problem.testCases}
+                      functionName={extractFunctionName(problem.codeTemplate)}
+                    />
+                  </div>
+                )}
 
                 {/* Actions row */}
                 <div className="flex gap-2 flex-wrap">
@@ -260,4 +272,9 @@ function topicLabel(topicId: string): string {
     regex: "Regex/Automate",
   };
   return map[topicId] ?? topicId;
+}
+
+function extractFunctionName(template: string): string {
+  const match = template.match(/function\s+(\w+)\s*\(/);
+  return match ? match[1] : "solution";
 }

@@ -66,6 +66,50 @@ Algoritmul deplasează pattern-ul astfel încât frontiera, văzută ca prefix a
 - **Regula sufixului bun → i = 2:** regula aliniază penultima apariție în pattern a sufixului bun (începând cu poziția 3 în pattern) cu sufixul bun din text (începând cu poziția 5 în text).
 
 Ambele reguli propun i = 2.`,
+        codeTemplate: `function buildLPS(pattern) {
+  // LPS[i] = lungimea celui mai lung prefix propriu
+  // care este și sufix al pattern[0..i]
+  const lps = new Array(pattern.length).fill(0);
+  let len = 0;
+  let i = 1;
+  while (i < pattern.length) {
+    if (pattern[i] === pattern[len]) {
+      len++;
+      lps[i] = len;
+      i++;
+    } else {
+      if (len !== 0) {
+        len = lps[len - 1];
+      } else {
+        lps[i] = 0;
+        i++;
+      }
+    }
+  }
+  return lps;
+}`,
+        testCases: [
+          {
+            label: "ABAB → [0,0,1,2]",
+            args: ["ABAB"],
+            expected: [0, 0, 1, 2],
+          },
+          {
+            label: "AAAA → [0,1,2,3]",
+            args: ["AAAA"],
+            expected: [0, 1, 2, 3],
+          },
+          {
+            label: "ABCD → [0,0,0,0]",
+            args: ["ABCD"],
+            expected: [0, 0, 0, 0],
+          },
+          {
+            label: "AABAACAABAA → [0,1,0,1,2,0,1,2,3,4,5]",
+            args: ["AABAACAABAA"],
+            expected: [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5],
+          },
+        ],
       },
       {
         id: "s24-2",

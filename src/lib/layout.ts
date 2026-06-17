@@ -44,16 +44,23 @@ function positionChildren(
   if (!base) return;
   const M = children.length;
   const ch = SIZE[childSizeKey]?.h ?? 30;
-  const colHalf = ((M - 1) * gap) / 2 + ch / 2;
+  const spanHalf = ((M - 1) * gap) / 2 + ch / 2;
   const len = Math.hypot(base.x, base.y) || 1;
   const ux = base.x / len;
   const uy = base.y / len;
-  const dist = radialOffset + colHalf;
-  const colX = base.x + ux * dist;
-  const colY = base.y + uy * dist;
-  const startY = colY - ((M - 1) * gap) / 2;
+
+  const perpX = -uy;
+  const perpY = ux;
+
+  const dist = radialOffset + spanHalf;
+  const anchorX = base.x + ux * dist;
+  const anchorY = base.y + uy * dist;
+
   children.forEach((node, j) => {
-    centers.set(node.id, { x: colX, y: startY + j * gap });
+    centers.set(node.id, {
+      x: anchorX + perpX * (j * gap - ((M - 1) * gap) / 2),
+      y: anchorY + perpY * (j * gap - ((M - 1) * gap) / 2),
+    });
   });
 }
 

@@ -61,7 +61,7 @@ export function getLayoutedElements(
   nodes
     .filter((n) => n.type === "quiz")
     .forEach((node) => {
-      const topicKey = node.id.split("-").slice(0, 2).join("-");
+      const topicKey = `topic-${node.id.split("-")[1]}`;
       const arr = quizzesByTopic.get(topicKey) ?? [];
       arr.push(node);
       quizzesByTopic.set(topicKey, arr);

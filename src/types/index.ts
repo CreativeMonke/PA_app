@@ -24,6 +24,11 @@ export interface QuizQuestion {
   explanation: string;
 }
 
+export interface QuizSet {
+  difficulty: string;
+  questions: QuizQuestion[];
+}
+
 export interface ExamProblem {
   id: string;
   number: string;

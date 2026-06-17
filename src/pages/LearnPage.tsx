@@ -10,6 +10,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useProgressStore } from "@/store/useProgressStore";
 import { TOPICS, getTopicById } from "@/data/topics";
 import { QUIZZES } from "@/data/quizzes";
+import type { QuizSet } from "@/types";
 import { pageVariants } from "@/lib/animations";
 
 type Step = "theory" | "code" | "simulator" | "quiz";
@@ -25,9 +26,10 @@ export default function LearnPage() {
   const { activeTopicId, setActiveTopicId } = useAppStore();
   const { isTopicComplete, markTopicComplete, isQuizPassed } = useProgressStore();
   const [step, setStep] = useState<Step>("theory");
+  const [activeQuizIndex, setActiveQuizIndex] = useState(0);
 
   const topic = getTopicById(activeTopicId);
-  const quizQuestions = QUIZZES[activeTopicId] ?? [];
+  const quizSets: QuizSet[] = QUIZZES[activeTopicId] ?? [];
 
   if (!topic) {
     return (
@@ -118,7 +120,9 @@ export default function LearnPage() {
               {step === "quiz" && (
                 <QuizStep
                   topicId={topic.id}
-                  questions={quizQuestions}
+                  quizSets={quizSets}
+                  activeQuizIndex={activeQuizIndex}
+                  onSelectQuiz={setActiveQuizIndex}
                   onPass={handleQuizPass}
                   alreadyPassed={quizPassed}
                 />
@@ -242,25 +246,61 @@ function SimulatorStep({ topicId }: { topicId: string }) {
   );
 }
 
-function QuizStep({ topicId, questions, onPass, alreadyPassed }: {
+function QuizStep({ topicId, quizSets, activeQuizIndex, onSelectQuiz, onPass, alreadyPassed }: {
   topicId: string;
-  questions: import("@/types").QuizQuestion[];
+  quizSets: QuizSet[];
+  activeQuizIndex: number;
+  onSelectQuiz(index: number): void;
   onPass(): void;
   alreadyPassed: boolean;
 }) {
+  const activeQuiz = quizSets[activeQuizIndex];
+
+  if (quizSets.length === 0) {
+    return (
+      <div className="max-w-xl">
+        <div className="step-label"><span className="step-number">4</span>Quiz</div>
+        <div className="glass-panel p-5">
+          <div style={{ color: "var(--color-text-muted)" }}>Quiz indisponibil pentru această temă.</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-xl">
       <div className="step-label"><span className="step-number">4</span>Quiz</div>
+
+      {/* Difficulty selector */}
+      {quizSets.length > 1 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {quizSets.map((qs, i) => (
+            <button
+              key={i}
+              className={`pa-btn ${i === activeQuizIndex ? "pa-btn--secondary" : "pa-btn--ghost"}`}
+              style={{
+                fontSize: 12,
+                padding: "4px 12px",
+                borderColor: i === activeQuizIndex ? "var(--color-border-raised)" : "transparent",
+              }}
+              onClick={() => onSelectQuiz(i)}
+            >
+              {qs.difficulty}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="glass-panel p-5">
-        {questions.length > 0 ? (
+        {activeQuiz ? (
           <Quiz
             topicId={topicId}
-            questions={questions}
+            questions={activeQuiz.questions}
             onPass={onPass}
             alreadyPassed={alreadyPassed}
           />
         ) : (
-          <div style={{ color: "var(--color-text-muted)" }}>Quiz indisponibil pentru această temă.</div>
+          <div style={{ color: "var(--color-text-muted)" }}>Selectează un quiz de mai sus.</div>
         )}
       </div>
     </div>

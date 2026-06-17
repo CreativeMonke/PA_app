@@ -12,6 +12,7 @@ import { TOPICS, getTopicById } from "@/data/topics";
 import { QUIZZES } from "@/data/quizzes";
 import type { QuizSet } from "@/types";
 import { pageVariants } from "@/lib/animations";
+import { markdownToHtml } from "@/lib/markdown";
 import { DIFFICULTIES } from "@/data/difficultyConfig";
 
 type Step = "theory" | "code" | "simulator" | "quiz";
@@ -333,31 +334,4 @@ function QuizStep({ topicId, quizSets, activeQuizIndex, onSelectQuiz, onPass, al
       </div>
     </div>
   );
-}
-
-// Minimal markdown → HTML for the theory content
-function markdownToHtml(md: string): string {
-  return md
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/^```[\w]*\n([\s\S]*?)```$/gm, (_: string, code: string) => `<pre><code>${escHtml(code)}</code></pre>`)
-    .replace(/^---$/gm, "<hr>")
-    .replace(/^\| (.+) \|$/gm, (line: string) => {
-      const cells = line.slice(2, -2).split(" | ");
-      return `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
-    })
-    .replace(/^(<tr>.*<\/tr>\n?)+/gm, (t: string) => `<table>${t}</table>`)
-    .replace(/^\*\s(.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*<\/li>\n?)+/g, (list: string) => `<ul>${list}</ul>`)
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^(?!<[h|u|t|p|c|h|l|o])/gm, "")
-    .replace(/<\/h\d>\n/g, "</h2>")
-    || md;
-}
-
-function escHtml(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

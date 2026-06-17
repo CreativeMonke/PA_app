@@ -6,6 +6,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useProgressStore } from "@/store/useProgressStore";
 import { getExamById } from "@/data/practiceExams";
 import { pageVariants } from "@/lib/animations";
+import { markdownToHtml } from "@/lib/markdown";
 
 export default function PracticePage() {
   const { activeExamId, activeProblemIndex, setActiveProblemIndex } = useAppStore();
@@ -259,42 +260,4 @@ function topicLabel(topicId: string): string {
     regex: "Regex/Automate",
   };
   return map[topicId] ?? topicId;
-}
-
-function markdownToHtml(md: string): string {
-  const html = md
-    .replace(/^```[\w]*\n([\s\S]*?)```$/gm, (_: string, code: string) =>
-      `<pre><code>${escHtml(code)}</code></pre>`
-    )
-    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-    .replace(/^\*\*\[(.+?)\](.+?)\*\*$/gm, "<h3><strong>[$1]$2</strong></h3>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
-    .replace(/^---$/gm, "<hr>")
-    .replace(/^\| (.+) \|$/gm, (line: string) => {
-      const isHeader = line.includes("---");
-      if (isHeader) return "";
-      const cells = line.slice(2, -2).split(" | ");
-      return `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
-    })
-    .replace(/(<tr>.*?<\/tr>\n?)+/gs, (t: string) => `<table>${t}</table>`)
-    .replace(/^\d\. (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*?<\/li>\n?)+/gs, (l: string) => `<ol>${l}</ol>`)
-    .replace(/^\* (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*?<\/li>\n?)+/gs, (l: string) => `<ul>${l}</ul>`);
-
-  return html
-    .split(/\n\n+/)
-    .map((block) => {
-      const trimmed = block.trim();
-      if (!trimmed) return "";
-      if (/^<(h[1-6]|ul|ol|pre|table|hr|div|p)/.test(trimmed)) return trimmed;
-      return `<p>${trimmed.replace(/\n/g, " ")}</p>`;
-    })
-    .join("\n");
-}
-
-function escHtml(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

@@ -1,72 +1,189 @@
 {
   "project": {
     "name": "PA Restanță Study App",
-    "type": "Vite + React 18 + TypeScript",
-    "styling": "Tailwind CSS 3 + custom CSS variables (dark theme)",
-    "state": "zustand",
-    "animations": "framer-motion",
+    "type": "Vite + React 18 + TypeScript SPA",
+    "styling": "Tailwind CSS 3 + custom CSS variables (dark theme, Outfit font)",
+    "state": "Zustand 4",
+    "animations": "framer-motion 11",
     "icons": "lucide-react",
-    "deployment": "Vercel (static SPA)"
+    "router": "react-router-dom 6 (HashRouter)",
+    "deployment": "Vercel (static SPA)",
+    "purpose": "Exam prep app for 'Proiectarea Algoritmilor' (Algorithm Design) restanță exam at FII UAIC. Covers KMP, Boyer-Moore, DP, Greedy, BKT, NP, randomized algorithms, regex, analysis."
   },
 
   "codebase_layout": {
     "root": "PA_app/",
-    "src/data/": "Static data files (quizzes, topics, exams)",
-    "src/types/": "TypeScript interfaces (Topic, QuizQuestion, QuizSet, PracticeExam, etc.)",
-    "src/store/": "Zustand stores (useAppStore, useProgressStore)",
-    "src/pages/": "Page components (LandingPage, LearnPage, PracticePage, OverviewPage)",
-    "src/components/": "Reusable components (layout/, quiz/, simulators/)",
-    "dist/": "Build output (gitignored)"
+    "src/App.tsx": "Root component — route setup, mode detection from path, ambient bg orbs",
+    "src/main.tsx": "Entry — HashRouter wrapper",
+    "src/index.css": "567 lines of CSS: design tokens, glass-panel, sim-cell, quiz-option, code-block, sidebar, topbar, progress-track, mode-pill, animated background (3 orbs + grid), scrollbar styling, animations",
+    "src/types/index.ts": "Type interfaces: AppMode, CodeExample, Topic, QuizQuestion, QuizSet, ExamProblem, PracticeExam, ProgressData",
+    "src/lib/animations.ts": "Framer-motion variants: pageVariants (page transitions), staggerContainer/Item (list reveals), fadeIn",
+    "src/data/topics.ts": "10 Topic objects (~1180 lines) with rich markdown theory content, key points, code examples in ALK pseudocode",
+    "src/data/quizzes.ts": "Barrel — aggregates all quiz sets into QUIZZES record keyed by topic ID",
+    "src/data/kmp-bm-quizzes.ts": "KMP (5 levels) + BM (5 levels), ~30 questions each level",
+    "src/data/topicQuizzes.ts": "DP1 + DP2 + Greedy, 5 levels each",
+    "src/data/quizSets.ts": "BKT (5 levels) + Analiza (5 levels) + Nedet (5 levels) — ~5000 lines total across these quiz files",
+    "src/data/prob-regex-quizzes.ts": "Prob + Regex, 5 levels each",
+    "src/data/practiceExams.ts": "Re-exports PRACTICE_EXAMS from exams/",
+    "src/data/exams/index.ts": "Aggregates legacy + sesiuni + partiale + modele exams",
+    "src/data/exams/sesiuni.ts": "8 session/restanta exams (2021-2024), full problem statements + hints + solutions in Romanian",
+    "src/data/exams/partiale.ts": "7 partial exams (2015-2019 series A/B)",
+    "src/data/exams/modele.ts": "10 model exams",
+    "src/data/exams/legacy.ts": "Legacy/handwritten exam problems",
+    "src/store/useAppStore.ts": "Global UI state: mode, sidebarOpen, activeTopicId, activeExamId, activeProblemIndex",
+    "src/store/useProgressStore.ts": "Progress persistence via localStorage (completedTopics, passedQuizzes, solvedProblems as Sets)",
+    "src/pages/LandingPage.tsx": "Hero with floating CS glyphs, stat chips (topics/quizzes/problems), 3 CTA cards, quick action buttons",
+    "src/pages/LearnPage.tsx": "4-step learning flow: Theory → Code → Simulator → Quiz. Sidebar-based topic selection, step indicators, next-topic progression",
+    "src/pages/PracticePage.tsx": "Exam problem browser with hint reveal (progressive), solution toggle, solved mark, prev/next navigation, problem tabs",
+    "src/pages/OverviewPage.tsx": "SVG radial gauge, stat rows, 'continue where you left off' card, topic grid with status badges, exam progress bars, readiness assessment",
+    "src/components/layout/Sidebar.tsx": "Animated collapsible sidebar with 3 variants (LearnSidebar: topic list with completion dots, PracticeSidebar: exam accordion with problem sublist, OverviewSidebar: static info)",
+    "src/components/layout/TopBar.tsx": "Top bar with sidebar toggle, logo, mode navigation pill (animated bg), progress summary badges",
+    "src/components/quiz/Quiz.tsx": "Retake-based quiz: tracks wrong questions, only retakes those, shows explanation after each answer, progress bar, pass state with celebration screen",
+    "src/components/simulators/KMPSimulator.tsx": "Interactive KMP: editable text/pattern, computes failure table, step-by-step visualization with colored cells, auto-play controls, match/mismatch descriptions",
+    "src/components/simulators/BMSimulator.tsx": "Interactive BM: editable text/pattern, last-occurrence table, step visualization comparing right-to-left, bad-char + good-suffix rules, shift amounts",
+    "src/components/simulators/DPSimulator.tsx": "DP matrix path simulator: hardcoded 3x4 matrix, computes dp table step-by-step, side-by-side A and DP matrices, highlights max value, auto-play",
+    "dist/": "Build output"
   },
 
-  "data_files": {
-    "topics.ts": "10 topics: kmp, bm, dp1, dp2, greedy, bkt, analiza, nedet, prob, regex",
-    "quizzes.ts": "Barrel file aggregating quiz sets from 4 split files",
-    "kmp-bm-quizzes.ts": "KMP + BM quizzes (5 difficulty levels each, 8-10 questions)",
-    "topicQuizzes.ts": "DP1 + DP2 + Greedy quizzes (5 difficulty levels each, 8-10 questions)",
-    "quizSets.ts": "BKT + Analiza + Nedet quizzes (5 difficulty levels each, 8-10 questions)",
-    "prob-regex-quizzes.ts": "Prob + Regex quizzes (5 difficulty levels each, 8-10 questions)",
-    "exams/partiale.ts": "7 partial exams (2019A/B, 2017A/B, 2015A, 2018A/B)",
-    "exams/modele.ts": "10 model exams",
-    "exams/sesiuni.ts": "Session exams",
-    "exams/legacy.ts": "Legacy exams",
-    "exams/index.ts": "Barrel aggregating all exam arrays",
-    "practiceExams.ts": "Re-exports PRACTICE_EXAMS from exams/"
+  "data_flow": {
+    "entry": "main.tsx → HashRouter → App.tsx",
+    "routing": "HashRouter with 4 routes: / (LandingPage), /learn (LearnPage), /practice (PracticePage), /overview (OverviewPage), catch-all redirects to /",
+    "mode_detection": "App.tsx watches location.pathname → sets mode in useAppStore ('learn'|'practice'|'overview')",
+    "state_persistence": "useProgressStore.init() called on mount → reads localStorage 'pa_progress'. All mutations auto-persist via persist() helper",
+    "sidebar_content": "Switches between LearnSidebar/PracticeSidebar/OverviewSidebar based on mode from useAppStore",
+    "learning_flow": "LearnPage reads activeTopicId from store → gets topic from TOPICS → renders step (theory/code/simulator/quiz). Quiz retake cycle: wrong questions re-queued until all correct → marks topic complete",
+    "practice_flow": "PracticePage reads activeExamId + activeProblemIndex → renders problem statement with progressive hints + solution toggle → mark solved",
+    "overview_flow": "OverviewPage reads all progress stores → computes percentages → renders radial gauge + per-topic/exam progress"
   },
 
-  "screens_and_features": {
-    "LandingPage": "Topic cards grid, click to start learning, shows progress per topic",
-    "LearnPage": "4-step flow: Theory → Code → Simulator → Quiz. Has difficulty selector for quizzes.",
-    "PracticePage": "Exam listing + problem browser with hints/solution toggle",
-    "OverviewPage": "Progress overview across all topics",
-    "Sidebar": "Topic navigation with completion badges",
-    "Quiz": "Round-based: wrong questions retaken, correct questions skipped. localStorage progress persistence.",
-    "Simulators": "KMP (interactive failure function + search), BM, DP (matrix traversal)"
+  "components_tree": {
+    "App": {
+      "TopBar": ["Menu toggle", "Logo", "Mode nav pill (Învață/Practică/Progres)", "Progress badges"],
+      "Sidebar": {
+        "LearnSidebar": "Topic list with completion/quiz-passed icons",
+        "PracticeSidebar": "Exam accordion with problem sublist",
+        "OverviewSidebar": "Static description"
+      },
+      "LandingPage": ["Floating glyphs", "Hero title", "Stat chips", "3 CTA cards", "Quick action buttons"],
+      "LearnPage": {
+        "Step tabs": ["Teorie", "Cod", "Simulator", "Quiz"],
+        "TheoryStep": "markdown-to-HTML rendered keyPoints + description",
+        "CodeStep": "code blocks in ALK pseudocode",
+        "SimulatorStep": "Routes to KMPSimulator | BMSimulator | DPSimulator based on topicId",
+        "QuizStep": "Difficulty selector + Quiz component"
+      },
+      "PracticePage": {
+        "Problem header": "number, points, topic badges",
+        "Problem statement": "markdown rendered",
+        "Hints panel": "Progressive reveal (one at a time)",
+        "Solution panel": "Toggle visibility with emerald styling",
+        "Navigation": "Prev/Next problem buttons"
+      },
+      "OverviewPage": {
+        "RadialGauge": "SVG circle with animated stroke-dashoffset",
+        "Stat rows": "per-category progress bars",
+        "Continue card": "CTA to first incomplete topic",
+        "Topic grid": "status badges (complete/in-progress/quiz-passed/simulator)",
+        "Exam progress": "per-exam progress bars with problem number pills",
+        "Readiness card": "contextual message based on overall %"
+      }
+    }
   },
 
-  "progress": {
-    "storage": "localStorage key 'pa_progress'",
-    "tracks": ["completedTopics", "passedQuizzes", "solvedProblems"],
-    "scope": "Per-browser only, no sync across devices"
+  "types_interfaces": {
+    "AppMode": "'learn' | 'practice' | 'overview'",
+    "CodeExample": "{ title: string, code: string }",
+    "Topic": "{ id, title, subtitle, icon, description (markdown), keyPoints (string[]), codeExamples (CodeExample[]), hasSimulator, simulatorType? }",
+    "QuizQuestion": "{ question, options (string[4]), correctIndex, explanation }",
+    "QuizSet": "{ difficulty: string, questions: QuizQuestion[] }",
+    "ExamProblem": "{ id, number, points, topic, statement, hints, solution }",
+    "PracticeExam": "{ id, year, title, totalPoints, problems: ExamProblem[] }",
+    "ProgressData": "{ completedTopics, passedQuizzes, solvedProblems } — serialized to JSON"
   },
 
-  "done": [
-    "Initial scaffold: Vite + React + TS + Tailwind + zustand + framer-motion",
-    "Created 10 topic entries with descriptions, keyPoints, codeExamples from course PDFs",
-    "Created 460+ quiz questions across 10 topics, each with 5 difficulty levels (Începător→Expert)",
-    "Quiz retake logic: only wrong questions are re-asked, not all",
-    "Quiz difficulty selector UI in LearnPage",
-    "7 partial exams + 10 model exams with problem statements and solutions transcribed from PDFs",
-    "Progress persisted in localStorage",
-    "Initial commit and push to GitHub, deployed on Vercel"
+  "state_management": {
+    "useAppStore (zustand)": {
+      "state": ["mode", "sidebarOpen", "activeTopicId", "activeExamId", "activeProblemIndex"],
+      "actions": ["setMode", "toggleSidebar", "setSidebarOpen", "setActiveTopicId", "setActiveExamId", "setActiveProblemIndex"]
+    },
+    "useProgressStore (zustand)": {
+      "state": ["completedTopics (Set)", "passedQuizzes (Set)", "solvedProblems (Set)", "initialized"],
+      "actions": ["init (localStorage load)", "markTopicComplete", "markQuizPassed", "markProblemSolved", "isTopicComplete", "isQuizPassed", "isProblemSolved", "completedCount", "passedCount", "solvedCount"],
+      "persistence": "localStorage key 'pa_progress' — JSON serialized"
+    }
+  },
+
+  "key_functions_and_flows": {
+    "markdownToHtml": "Custom minimal markdown renderer (LearnPage + PracticePage) — supports ## h2, ### h3, **bold**, `code`, ```code blocks```, |tables|, * lists, numbered lists, --- hr. Two slightly different versions exist (PracticePage has extra table header skip and ordered list support)",
+    "Quiz retake logic (Quiz.tsx)": "Tracks wrong questions in wrongInRound Set. When round completes: if wrongInRound is empty → pass. Else → nextRound = [...wrongInRound] → only retake those. Repeats until all correct or pass.",
+    "KMPSimulator.computeSteps": "Simulates KMP search step-by-step, recording i, k, textPos, isMatch, isFound, description. Uses computeFailure for prefix function. Safety cap at 500 steps.",
+    "BMSimulator.computeSteps": "Simulates BM search step-by-step, recording alignStart, compareK, mismatchAt, rule (bad-char|good-suffix|match|found), shift, description. Uses lastOccurrence table. Simplified good suffix (just shift 1). Safety cap at 200 steps.",
+    "DPSimulator.computeDPLongestPath": "DP matrix longest increasing path DP computation step-by-step. Hardcoded 3x4 matrix. Records row, col, value, fromAbove, fromLeft, description. Builds partial DP table for visualization.",
+    "LearnPage step progression": "Step tabs filter out 'simulator' if !topic.hasSimulator. Footer nav has 'next step' button + 'next topic' button (shown only if quiz passed). Step dots indicator.",
+    "PracticePage problem reset": "When problemKey changes (new exam/problem), resets showHints, showSolution, hintIndex to 0."
+  },
+
+  "implemented": [
+    "10 comprehensive theory topics with markdown content, key points, and ALK code examples",
+    "460+ quiz questions across 10 topics, each with 5 difficulty levels (Începător, Ușor, Mediu, Avansat, Expert)",
+    "Quiz retake system — only wrong questions re-asked, spiral until all correct",
+    "3 interactive simulators: KMP (failure table + search visualization), BM (bad-char table + step visualization), DP (matrix path table building)",
+    "25+ real exam problems from session/restanță 2021-2024, partial exams 2015-2019, and model exams — with full statements, progressive hints, and solutions",
+    "Progress tracking with localStorage persistence (topics completed, quizzes passed, problems solved)",
+    "Overview dashboard with SVG radial gauge, per-topic/exam progress bars, readiness assessment with contextual messages",
+    "Animated background (3 drifting orbs + moving grid), glass-panel UI, smooth page transitions",
+    "Collapsible sidebar with context-aware content (topic list / exam accordion / overview)",
+    "Top bar with mode navigation pill (animated background pill indicator)",
+    "Landing page with floating CS glyphs, stat chips, CTA cards",
+    "Responsive layout with scrollable content areas",
+    "Dark theme with amber/emerald/cyan/violet accent colors"
   ],
 
-  "pending_features": [],
+  "nice_to_haves_not_implemented": [
+    "Backend/server — fully static SPA, no auth, no sync across devices",
+    "User accounts or multi-device progress sync",
+    "Practice mode: timed mock exams with automatic scoring",
+    "Question bank browser / search across all quiz questions",
+    "Flashcard mode for quick review",
+    "Code execution environment (run ALK pseudocode)",
+    "More simulators: Greedy (activity selection), BKT (N-queens), Rabin-Karp (rolling hash visualizer)",
+    "Exam PDF download / print-friendly view",
+    "Dark/light theme toggle (only dark mode exists)",
+    "Offline support (PWA/service worker)",
+    "Analytics — which questions users get wrong most often",
+    "Animated algorithm visualizations for more topics (greedy exchange argument, BKT tree, NFA simulation for regex)",
+    "Comparison tool: side-by-side KMP vs BM vs RK on same input",
+    "i18n / English language option"
+  ],
+
   "conventions": {
-    "language": "Romanian for all text content (UI, questions, explanations, code comments)",
+    "language": "Romanian for all UI text, questions, explanations",
     "data_pattern": "Topics use markdown descriptions, quizzes use QuizSet[] with difficulty levels",
-    "imports": "Use @/ path alias for src/",
+    "imports": "@/* path alias for src/",
     "types": "All interfaces in src/types/index.ts",
-    "code_comments": "None in component/data files"
+    "code_comments": "None in component/data files (except attribution comments in exam data)",
+    "styling": "Tailwind utility classes + custom CSS variables (--color-*) + custom component classes (.glass-panel, .sim-cell, .quiz-option, .code-block, .sidebar-item, .topbar)",
+    "routing": "HashRouter (for static deployment on Vercel — works without server config)",
+    "state": "Zustand stores for global state, no prop drilling beyond 1 level"
+  },
+
+  "design_system": {
+    "css_variables": "Defined in :root in index.css — dark base #0f0f11, surface levels (4%/7%/10% white), border levels (9%/14% white), accent colors (amber/emerald/rose/cyan/violet/orange), text opacity levels (92%/50%/32%)",
+    "components_classes": {
+      "glass-panel": "Rounded-xl with surface bg + border, used for cards and containers",
+      "sim-cell": "32-42px square cells for algorithm visualization, with variants: --header, --active (amber bg), --match (emerald), --mismatch (rose), --dp-filled (cyan)",
+      "quiz-option": "Flex row with letter badge, hover state, variants: --correct (emerald), --wrong (rose), --disabled",
+      "code-block": "Pre/code with mono font, dark bg, cyan accent header",
+      "sidebar-item": "Flex row with icon + text + status icon/dot, --active variant with amber accent",
+      "topbar": "H-flex with border-bottom, ~48px height",
+      "mode-pill": "Button group with animated background indicator (framer-motion layoutId)",
+      "badge": "Small pill labels with --amber/--emerald/--cyan/--violet variants",
+      "pa-btn": "Button variants: --primary (amber), --secondary (subtle raised), --ghost (transparent), --icon (square), --danger (rose), --success (emerald)",
+      "progress-track": "4px rounded track (surface-raised bg), progress-fill (amber gradient fill)",
+      "step-label": "Section headers with step-number circle",
+      "stat-chip": "Compact stat display for landing page",
+      "prose-pa": "2/3 max-width prose container for theory content"
+    },
+    "animations": "Framer-motion: pageVariants (fade+slide), staggerContainer/Item (0.06s stagger), AnimatePresence for exit animations. CSS: orb-drift (48s/38s/52s), grid-pan (25s linear)"
   }
 }

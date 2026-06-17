@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, RotateCcw } from "lucide-react";
 import type { QuizQuestion } from "@/types";
 
 interface Props {
@@ -11,35 +11,39 @@ interface Props {
 }
 
 export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPassed }: Props) {
-  const [current, setCurrent] = useState(0);
+  const allIndices = useMemo(() => questions.map((_, i) => i), [questions]);
+  const [round, setRound] = useState<number[]>(allIndices);
+  const [roundIndex, setRoundIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [wrong, setWrong] = useState(false);
+  const [wrongInRound, setWrongInRound] = useState<Set<number>>(new Set());
   const [passed, setPassed] = useState(alreadyPassed ?? false);
 
-  const q = questions[current];
+  const q = questions[round[roundIndex]];
   const answered = selected !== null;
   const isCorrect = selected === q.correctIndex;
 
   function handleSelect(idx: number) {
     if (answered) return;
     setSelected(idx);
-    if (idx !== q.correctIndex) setWrong(true);
+    if (idx !== q.correctIndex) {
+      setWrongInRound((prev) => new Set(prev).add(round[roundIndex]));
+    }
   }
 
   function handleNext() {
-    if (current < questions.length - 1) {
-      setCurrent((c) => c + 1);
+    if (roundIndex < round.length - 1) {
+      setRoundIndex((i) => i + 1);
       setSelected(null);
-      setWrong(false);
     } else {
-      if (!wrong) {
+      if (wrongInRound.size === 0) {
         setPassed(true);
         onPass();
       } else {
-        // Reset and try again
-        setCurrent(0);
+        const nextRound = [...wrongInRound];
+        setRound(nextRound);
+        setRoundIndex(0);
         setSelected(null);
-        setWrong(false);
+        setWrongInRound(new Set());
       }
     }
   }
@@ -62,6 +66,12 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
     );
   }
 
+  const total = questions.length;
+  const done = total - round.length + roundIndex;
+  const roundLabel = round.length < total
+    ? `Restanțe (${round.length}) — ${roundIndex + 1} / ${round.length}`
+    : `${done} / ${total}`;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Progress */}
@@ -69,18 +79,18 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
         <div className="progress-track flex-1">
           <div
             className="progress-fill"
-            style={{ width: `${((current) / questions.length) * 100}%` }}
+            style={{ width: `${(done / total) * 100}%` }}
           />
         </div>
         <span className="text-xs" style={{ color: "var(--color-text-dim)" }}>
-          {current + 1} / {questions.length}
+          {roundLabel}
         </span>
       </div>
 
       {/* Question */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={current}
+          key={`${round.length}-${roundIndex}`}
           initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -12 }}
@@ -176,19 +186,19 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3"
           >
-            {wrong && current === questions.length - 1 && (
+            {roundIndex === round.length - 1 && wrongInRound.size > 0 && (
               <span className="text-xs" style={{ color: "var(--color-rose)" }}>
-                Ai greșit o întrebare — quiz-ul va fi reluat de la început.
+                {wrongInRound.size} întrebare{wrongInRound.size > 1 ? "i" : ""} greșită{wrongInRound.size > 1 ? "" : ""} — vei repeta doar a{wrongInRound.size > 1 ? "cestea" : "ceasta"}.
               </span>
             )}
             <button
               className="pa-btn pa-btn--primary ml-auto"
               onClick={handleNext}
             >
-              {current < questions.length - 1 ? (
+              {roundIndex < round.length - 1 ? (
                 <>Continuă <ArrowRight size={13} /></>
-              ) : wrong ? (
-                <>Încearcă din nou <RotateCcwIcon /></>
+              ) : wrongInRound.size > 0 ? (
+                <>Retake {wrongInRound.size} greșit{wrongInRound.size > 1 ? "e" : "ă"} <RotateCcw size={13} /></>
               ) : (
                 <>Finalizează <CheckCircle2 size={13} /></>
               )}
@@ -197,14 +207,5 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function RotateCcwIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-    </svg>
   );
 }

@@ -1,35 +1,20 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 
-interface ExamCategoryNodeData extends Record<string, unknown> {
-  categoryId: string;
-  label: string;
+interface ExamTopicNodeData extends Record<string, unknown> {
+  topicId: string;
   icon: string;
-  solvedCount: number;
-  totalCount: number;
+  title: string;
+  problemCount: number;
   isExpanded: boolean;
+  hasNext: boolean;
   onToggle: () => void;
 }
 
-type ExamCategoryNodeType = Node<ExamCategoryNodeData, "examCategory">;
+type ExamTopicNodeType = Node<ExamTopicNodeData, "examTopic">;
 
-const CATEGORY_GRADIENTS: Record<string, string> = {
-  "cat-legacy": "rgba(148,163,184,0.15)",
-  "cat-sesiuni": "rgba(251,191,36,0.15)",
-  "cat-partiale": "rgba(34,211,238,0.15)",
-  "cat-modele": "rgba(129,140,248,0.15)",
-};
-
-const CATEGORY_BORDERS: Record<string, string> = {
-  "cat-legacy": "rgba(148,163,184,0.3)",
-  "cat-sesiuni": "rgba(251,191,36,0.3)",
-  "cat-partiale": "rgba(34,211,238,0.3)",
-  "cat-modele": "rgba(129,140,248,0.3)",
-};
-
-function ExamCategoryNodeComponent({ data }: NodeProps<ExamCategoryNodeType>) {
-  const { label, icon, solvedCount, totalCount, isExpanded, categoryId, onToggle } = data;
-  const pct = totalCount ? (solvedCount / totalCount) * 100 : 0;
+function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
+  const { icon, title, problemCount, isExpanded, hasNext, onToggle } = data;
 
   return (
     <div
@@ -37,9 +22,20 @@ function ExamCategoryNodeComponent({ data }: NodeProps<ExamCategoryNodeType>) {
       style={{
         padding: "10px 14px",
         width: 160,
-        background: CATEGORY_GRADIENTS[categoryId] ?? "rgba(255,255,255,0.04)",
-        border: `1px solid ${CATEGORY_BORDERS[categoryId] ?? "rgba(255,255,255,0.07)"}`,
-        boxShadow: isExpanded ? `0 0 16px ${CATEGORY_BORDERS[categoryId] ?? "transparent"}` : "none",
+        background: isExpanded
+          ? "linear-gradient(180deg, rgba(52,211,153,0.13), rgba(52,211,153,0.05))"
+          : "rgba(255,255,255,0.04)",
+        border: `1px solid ${
+          hasNext
+            ? "rgba(52,211,153,0.35)"
+            : isExpanded
+              ? "rgba(52,211,153,0.2)"
+              : "rgba(255,255,255,0.07)"
+        }`,
+        boxShadow:
+          hasNext
+            ? "0 0 16px rgba(52,211,153,0.12)"
+            : "inset 0 1px 0 rgba(255,255,255,0.04)",
         transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
       }}
       onClick={onToggle}
@@ -65,7 +61,7 @@ function ExamCategoryNodeComponent({ data }: NodeProps<ExamCategoryNodeType>) {
       <div className="flex items-center gap-2">
         <span style={{ fontSize: 16 }}>{icon}</span>
         <span className="text-[11px] font-medium truncate flex-1 min-w-0" style={{ color: "#e2e8f0" }}>
-          {label}
+          {title}
         </span>
         <div
           className="flex items-center justify-center shrink-0 rounded"
@@ -73,11 +69,11 @@ function ExamCategoryNodeComponent({ data }: NodeProps<ExamCategoryNodeType>) {
             padding: "1px 5px",
             fontSize: 10,
             fontWeight: 600,
-            background: pct === 100 ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.06)",
-            color: pct === 100 ? "var(--color-emerald)" : "rgba(255,255,255,0.4)",
+            background: problemCount > 0 ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)",
+            color: problemCount > 0 ? "var(--color-emerald)" : "rgba(255,255,255,0.3)",
           }}
         >
-          {solvedCount}/{totalCount}
+          {problemCount}
         </div>
         <div
           className="w-3 h-3 rounded-full flex items-center justify-center shrink-0"
@@ -100,4 +96,4 @@ function ExamCategoryNodeComponent({ data }: NodeProps<ExamCategoryNodeType>) {
   );
 }
 
-export default memo(ExamCategoryNodeComponent);
+export default memo(ExamTopicNodeComponent);

@@ -15,26 +15,57 @@ import { GraduationCap } from "lucide-react";
 import { useProgressStore } from "@/store/useProgressStore";
 import { useAppStore } from "@/store/useAppStore";
 import { getLayoutedElements } from "@/lib/layout";
+import { TOPICS } from "@/data/topics";
 import { PRACTICE_EXAMS } from "@/data/practiceExams";
-import ExamCategoryNodeComponent from "./ExamCategoryNode";
+import RootNodeComponent from "./RootNode";
+import ExamTopicNodeComponent from "./ExamTopicNode";
 import ExamNodeComponent from "./ExamNode";
 
-const CATEGORIES = [
-  { id: "cat-legacy", label: "Legacy", icon: "📜" },
-  { id: "cat-sesiuni", label: "Sesiuni", icon: "📝" },
-  { id: "cat-partiale", label: "Parțiale", icon: "📐" },
-  { id: "cat-modele", label: "Modele", icon: "📋" },
-];
+interface TopicExamInfo {
+  examId: string;
+  examTitle: string;
+  problemCount: number;
+}
 
-const CATEGORY_BOUNDS = [
-  { id: "cat-legacy", start: 0, end: 2 },
-  { id: "cat-sesiuni", start: 2, end: 12 },
-  { id: "cat-partiale", start: 12, end: 19 },
-  { id: "cat-modele", start: 19, end: 29 },
-];
+interface TopicDataEntry {
+  problemCount: number;
+  exams: TopicExamInfo[];
+}
+
+function computeTopicData(): Map<string, TopicDataEntry> {
+  const topicMap = new Map<string, TopicDataEntry>();
+
+  for (const topic of TOPICS) {
+    topicMap.set(topic.id, { problemCount: 0, exams: [] });
+  }
+
+  for (const exam of PRACTICE_EXAMS) {
+    const countPerTopic = new Map<string, number>();
+    for (const problem of exam.problems) {
+      if (topicMap.has(problem.topic)) {
+        countPerTopic.set(
+          problem.topic,
+          (countPerTopic.get(problem.topic) || 0) + 1,
+        );
+      }
+    }
+    for (const [topicId, count] of countPerTopic) {
+      const entry = topicMap.get(topicId)!;
+      entry.problemCount += count;
+      entry.exams.push({
+        examId: exam.id,
+        examTitle: exam.title,
+        problemCount: count,
+      });
+    }
+  }
+
+  return topicMap;
+}
 
 const nodeTypes: NodeTypes = {
-  examCategory: ExamCategoryNodeComponent,
+  root: RootNodeComponent,
+  examTopic: ExamTopicNodeComponent,
   exam: ExamNodeComponent,
 };
 
@@ -42,11 +73,13 @@ function ExamTreeFlow() {
   const navigate = useNavigate();
   const { setActiveExamId, setActiveProblemIndex } = useAppStore();
   const { isProblemSolved } = useProgressStore();
-  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
+  const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
   const rf = useReactFlow();
 
+  const topicData = useMemo(() => computeTopicData(), []);
+
   const toggleExpand = useCallback((id: string) => {
-    setExpandedCategoryId((prev) => (prev === id ? null : id));
+    setExpandedTopicId((prev) => (prev === id ? null : id));
   }, []);
 
   const handleExamClick = useCallback(
@@ -69,52 +102,51 @@ function ExamTreeFlow() {
       data: {},
     });
 
-    CATEGORIES.forEach((cat) => {
-      const bound = CATEGORY_BOUNDS.find((b) => b.id === cat.id);
-      const exams = bound ? PRACTICE_EXAMS.slice(bound.start, bound.end) : [];
-      const totalCount = exams.reduce((s, e) => s + e.problems.length, 0);
-      const solvedCount = exams.reduce(
-        (s, e) => s + e.problems.filter((p) => isProblemSolved(`${e.id}-${p.id}`)).length,
-        0,
-      );
+    TOPICS.forEach((topic) => {
+      const info = topicData.get(topic.id);
+      const totalCount = info?.problemCount ?? 0;
 
       nodeList.push({
-        id: cat.id,
-        type: "examCategory",
+        id: topic.id,
+        type: "examTopic",
         position: { x: 0, y: 0 },
         data: {
-          categoryId: cat.id,
-          label: cat.label,
-          icon: cat.icon,
-          solvedCount,
-          totalCount,
-          isExpanded: expandedCategoryId === cat.id,
-          onToggle: () => toggleExpand(cat.id),
+          topicId: topic.id,
+          icon: topic.icon,
+          title: topic.title,
+          problemCount: totalCount,
+          isExpanded: expandedTopicId === topic.id,
+          hasNext: totalCount > 0,
+          onToggle: () => toggleExpand(topic.id),
         },
       });
 
       edgeList.push({
-        id: `e-root-exams-${cat.id}`,
+        id: `e-root-exams-${topic.id}`,
         source: "root-exams",
-        target: cat.id,
+        target: topic.id,
         sourceHandle: "right",
         targetHandle: "left",
         type: "smoothstep",
         style: {
-          stroke: pctColor(solvedCount / Math.max(totalCount, 1)),
+          stroke:
+            totalCount > 0
+              ? "rgba(52,211,153,0.15)"
+              : "rgba(255,255,255,0.06)",
           strokeWidth: 1,
         },
         animated: false,
       });
     });
 
-    if (expandedCategoryId !== null) {
-      const bound = CATEGORY_BOUNDS.find((b) => b.id === expandedCategoryId);
-      const exams = bound ? PRACTICE_EXAMS.slice(bound.start, bound.end) : [];
+    if (expandedTopicId !== null && topicData.has(expandedTopicId)) {
+      const info = topicData.get(expandedTopicId)!;
+      info.exams.forEach((examInfo) => {
+        const examNodeId = `exam-${examInfo.examId}`;
+        const exam = PRACTICE_EXAMS.find((e) => e.id === examInfo.examId);
+        if (!exam) return;
 
-      exams.forEach((exam) => {
-        const examNodeId = `exam-${exam.id}`;
-        const solvedCount = exam.problems.filter((p) =>
+        const examSolvedCount = exam.problems.filter((p) =>
           isProblemSolved(`${exam.id}-${p.id}`),
         ).length;
         const problemProgress = exam.problems.map((p) =>
@@ -128,25 +160,31 @@ function ExamTreeFlow() {
           data: {
             examId: exam.id,
             title: exam.title,
-            solvedCount,
+            solvedCount: examSolvedCount,
             totalCount: exam.problems.length,
             problemProgress,
-            parentCategoryId: expandedCategoryId,
+            parentCategoryId: expandedTopicId,
             onClick: () => handleExamClick(exam.id),
           },
         });
 
         edgeList.push({
-          id: `e-${expandedCategoryId}-${examNodeId}`,
-          source: expandedCategoryId,
+          id: `e-${expandedTopicId}-${examNodeId}`,
+          source: expandedTopicId,
           target: examNodeId,
           sourceHandle: "right",
           targetHandle: "left",
           type: "smoothstep",
+          label: `${examInfo.problemCount} probleme`,
+          labelStyle: { fontSize: 9, fontWeight: 500, color: "rgba(255,255,255,0.35)" },
+          labelBgStyle: { fill: "rgba(10,10,20,0.85)", rx: 4, ry: 4 },
+          labelBgPadding: [6, 3] as [number, number],
+          labelBgBorderRadius: 4,
           style: {
-            stroke: solvedCount === exam.problems.length
-              ? "rgba(52,211,153,0.18)"
-              : "rgba(255,255,255,0.05)",
+            stroke:
+              examSolvedCount === exam.problems.length
+                ? "rgba(52,211,153,0.18)"
+                : "rgba(255,255,255,0.05)",
             strokeWidth: 1,
           },
           animated: false,
@@ -155,18 +193,18 @@ function ExamTreeFlow() {
     }
 
     return getLayoutedElements(nodeList, edgeList, {
-      ringRadiusX: 200,
-      ringRadiusY: 120,
-      nodeRadialOffset: 55,
+      ringRadiusX: 320,
+      ringRadiusY: 170,
+      nodeRadialOffset: 65,
       nodeGap: 34,
     });
-  }, [expandedCategoryId, toggleExpand, handleExamClick, isProblemSolved]);
+  }, [expandedTopicId, toggleExpand, handleExamClick, isProblemSolved, topicData]);
 
   useEffect(() => {
     if (rf && nodes.length > 0) {
       rf.fitView({ padding: 0.25, duration: 300 });
     }
-  }, [nodes.length, expandedCategoryId, rf]);
+  }, [nodes.length, expandedTopicId, rf]);
 
   return (
     <div
@@ -179,16 +217,15 @@ function ExamTreeFlow() {
           <h3 className="text-sm font-semibold">Examene de Restanță</h3>
         </div>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-          {expandedCategoryId !== null
-            ? "click category to collapse"
-            : "click a category to expand"}
+          {expandedTopicId !== null
+            ? "click topic to collapse"
+            : "click a topic to expand"}
         </span>
       </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        fitView
         proOptions={{ hideAttribution: true }}
         minZoom={0.2}
         maxZoom={2}
@@ -215,12 +252,6 @@ function ExamTreeFlow() {
       </ReactFlow>
     </div>
   );
-}
-
-function pctColor(ratio: number): string {
-  if (ratio >= 1) return "rgba(52,211,153,0.25)";
-  if (ratio > 0) return "rgba(251,191,36,0.15)";
-  return "rgba(255,255,255,0.06)";
 }
 
 export default function ExamTree() {

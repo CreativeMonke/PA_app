@@ -1,0 +1,500 @@
+import type { PracticeExam } from "@/types";
+
+export const MODELE_EXAMS: PracticeExam[] = [
+  {
+    id: "model-2020-1",
+    year: "2020",
+    title: "Model examen 2020 (1)",
+    totalPoints: 80,
+    problems: [
+      {
+        id: "md20-1-1",
+        number: "1",
+        points: 20,
+        topic: "analiza",
+        statement: `**[Analiză și proiectare — 20p]**\n\nSe consideră un algoritm care primește un tablou 5-dimensional M[1..n][1..n][1..n][1..n][1..n]:\n\ns = 0;\nfor (i = n; i >= 100; i /= 3)\n  for (j = 1; j <= n - 999999; j *= 2)\n    for (k = 100; k * k <= n - 999999; k += 3)\n      for (x = 999999; x * x <= n - 999999; x += 999999)\n        for (y = 1; y <= n - 999999; y += 3)\n          if (M[i][j][k][x][y] > 10) s = 1;\nreturn s;\n\n**(a)** (4p) Ce problemă computațională rezolvă algoritmul?\n\n**(b)** (5p) Scrieți un algoritm nedeterminist (fără instrucțiuni repetitive) care rezolvă aceeași problemă.\n\n**(c)** (1p) Care e modelul de calcul potrivit?\n\n**(d)** (6p) Calculați complexitatea în cazul cel mai nefavorabil.\n\n**(e)** (4p) Calculați complexitatea în cazul cel mai favorabil.`,
+        hints: [
+          "Algoritmul verifică dacă există o celulă în M cu valoare > 10, iterând prin 5 bucle cu pași diferiți.",
+          "Algoritmul nedeterminist: choose pentru fiecare index, apoi un if.",
+          "Cazul cel mai nefavorabil: când toate valorile sunt ≤ 10 (buclele se execută complet).",
+        ],
+        solution: `**(a) Problemă:**\n\n**Input:** M[1..n][1..n][1..n][1..n][1..n], n ≥ 0.\n**Output:** s = 1 dacă ∃ i ∈ {n, n/3, n/9, ...}, j ∈ {puteri ale lui 2 ≤ n−999999}, k ∈ {100, 103, ...} cu k² ≤ n−999999, x ∈ {999999, ...} cu x² ≤ n−999999, y ∈ {1, 4, 7, ..., n−999999} a.î. M[i][j][k][x][y] > 10; s = 0 altfel.\n\n**(b) Algoritm nedeterminist:**\n\n\`\`\`\nchoose i in {i | i=n/3^k, k≥0, i≥100};\nchoose j in {j | j=2^k, k≥0, j≤n-999999};\nchoose k in {100, 103, ...} s.t. k*k ≤ n-999999;\nchoose x in {999999, 999999+999999, ...} s.t. x*x ≤ n-999999;\nchoose y in {1, 4, 7, ..., n-999999};\nif (M[i][j][k][x][y] > 10) { success; }\nelse { failure; }\n\`\`\`\n\n**(c) Model de calcul:**\n\nModelul uniform, deoarece operațiile dominante sunt comparațiile.\n\n**(d) Cazul cel mai nefavorabil:**\n\n**Dimensiunea:** m = n⁵.\n**Operații:** M[i][j][k][x][y] > 10.\n**Caz:** toate valorile ≤ 10.\n**Timp:** O(log n · log n · √n · √n · n) = O(n² · log² n) (√n·√n = n, înmulțit cu factorul n din bucla pe y).\n\n**(e) Cazul cel mai favorabil:**\n\nO(1) — dacă prima stare e M[n][1][100][999999][1] = 11.`,
+      },
+      {
+        id: "md20-1-2",
+        number: "2",
+        points: 20,
+        topic: "prob",
+        statement: `**[Analiză probabilistă — 20p]**\n\nFie problema: A[0..n−1] cu elemente din {0..5}, o valoare v ∈ {0..5}. Output: ultimul index al lui v în A sau −1.\n\n**(a)** (5p) Proiectați un algoritm determinist care rezolvă problema prin parcurgere secvențială, cu cât mai puține comparații.\n\n**(b)** (5p) Fie C(n) = nr. de comparații. Care sunt valorile posibile?\n\n**(c)** (5p) Presupunând distribuția de probabilitate din enunț (p₀=3/24, p₁=4/24, p₂=5/24, p₃=4/24, p₄=7/24, p₅=1/24, iar v e aleasă uniform din {0,1,3,5}), determinați P(C(n) = x).\n\n**(d)** (5p) Folosind C(n), determinați numărul mediu de comparații.`,
+        hints: [
+          "Algoritmul: parcurge de la dreapta la stânga, se oprește la prima potrivire.",
+          "Valorile posibile pentru C(n): 1, 2, ..., n (când nu găsește, face n comparații).",
+          "Probabilitatea geometrică: P(C(n)=x) = (1−p_v)^(x−1) · p_v.",
+        ],
+        solution: `**(a) Algoritm:**\n\n\`\`\`\nf(A[0..n-1], v) {\n  i = n - 1;\n  while (i >= 0 && A[i] != v)\n    i = i - 1;\n  return i;\n}\n\`\`\`\n\n**(b) Valori posibile C(n):**\n\n1, 2, ..., n (pentru n > 0). Pentru n=0, 0 comparații.\n(Dacă se consideră și i ≥ 0: 1, 2, 4, ..., 2n−2, 2n, 2n+1.)\n\n**(c) P(C(n) = x):**\n\nP(C(n) = x) = Σᵥₑ{₀,₁,₃,₅} (1/4) · (1 − pᵥ)ˣ⁻¹ · pᵥ\n\n**(d) Numărul mediu:**\n\nM(C(n)) = Σᵢ₌₁ⁿ i · P(C(n) = i).`,
+      },
+      {
+        id: "md20-1-3",
+        number: "3",
+        points: 20,
+        topic: "greedy",
+        statement: `**[Greedy — 20p]**\n\nFie B = {1, 11, 24, 37}. Problema plății unei sume s cu număr minim de bancnote din B.\n\n**(a)** (5p) Găsiți o instanță pentru care greedy nu produce optimul (cu justificare).\n\n**(b)** (5p) Reprezentați primii 2 niveluri din arborele subproblemelor.\n\n**(c)** (5p) Schimbați un număr minim de elemente din B pentru ca greedy să fie optim.\n\n**(d)** (5p) Enunțați lema de alegere greedy și substructura optimă.`,
+        hints: [
+          "Pentru s=33, greedy dă 33=24+1+1+...+1 (10 bancnote), dar optim e 33=11+11+11 (3 bancnote).",
+          "Modificând 24 în 22, sistemul devine canonic și greedy e optim.",
+          "Lema de alegere: pentru orice sumă s > 0, există o soluție optimă care folosește cea mai mare bancnotă ≤ s.",
+        ],
+        solution: `**(a) Contraexemplu:**\n\nPentru s = 33: greedy alege 33 = 24 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 (10 bancnote). Optim: 33 = 11 + 11 + 11 (3 bancnote).\n\n**(b) Arborele (nivelurile 1-3):**\n\n\`\`\`\n                33\n        /        |        \\\n      32        22         9\n   /  |  \\    /  |  \\     |\n 31 21  8  21 11  -2   8\n\`\`\`\n\n**(c) Modificare:**\n\nSe păstrează numărul de elemente distincte și se înlocuiește un număr minim de valori astfel încât sistemul rezultat să fie *canonic* (greedy optim pentru orice sumă) — de regulă o singură modificare, cel mult două. Răspunsul concret depinde de variantă și trebuie justificat (de ex. verificând că pentru fiecare prag c[j] ≤ s < c[j+1] alegerea c[j] rămâne optimă); soluția oficială nu fixează o valoare anume.\n\n**(d) Lema de alegere:**\n\nPentru orice sumă s > 0, fie b = max{x ∈ B | x ≤ s}. Există o soluție optimă pentru s care conține b.\n\n**Substructura optimă:** Dacă b₁ + ... + bₖ e soluție optimă pentru s, atunci b₂ + ... + bₖ e soluție optimă pentru s − b₁.`,
+      },
+      {
+        id: "md20-1-4",
+        number: "4",
+        points: 20,
+        topic: "bkt",
+        statement: `**[Backtracking, NP — 20p]**\n\nConsiderăm problema SAT rezolvată prin backtracking.\n\n**(a)** (10p) Găsiți o formulă propozițională peste x₁, x₂, x₃ (toate 3 variabilele apar) pentru un arbore de căutare pruned dat.\n\n**(b)** (10p) Proiectați o reducere polinomială Karp de la 4-COL la SAT, exemplificând pe un graf cu 6 noduri și 7 muchii.`,
+        hints: [
+          "Pentru (a): se asociază fiecărui nod o subformulă; pentru frunze se asociază T (adevărat).",
+          "Pentru (b): se creează variabile b_{x,c} pentru fiecare nod x și culoare c.",
+          "Constrângeri: fiecare nod are cel puțin o culoare, cel mult o culoare, și nodurile adiacente au culori diferite.",
+        ],
+        solution: `**(a) Construcția formulei:**\n\nSe aplică strategia: pentru fiecare nod dfs(i) cu fii f₁ (muchia 0) și f₂ (muchia 1), formula e (¬xᵢ ∧ f₁) ∨ (xᵢ ∧ f₂). Pentru muchii tăiate (pruning), se omite fiul respectiv. Se construiește de la frunze spre rădăcină.\n\n**(b) Reducerea 4-COL ≤ₚ SAT:**\n\nSe creează variabile b_{x,c} pentru fiecare nod x și culoare c ∈ {1,2,3,4}.\n\nConstrângeri:\n1. Fiecare nod are cel puțin o culoare: b_{x,1} ∨ b_{x,2} ∨ b_{x,3} ∨ b_{x,4}\n2. Fiecare nod are cel mult o culoare: b_{x,c} → ∧_{d≠c} ¬b_{x,d}\n3. Muchii: pentru {x,y}, (b_{x,c} → ¬b_{y,c}) pentru fiecare c\n\nFormula finală = conjuncția tuturor constrângerilor.`,
+      },
+    ],
+  },
+
+  {
+    id: "model-2020-2",
+    year: "2020",
+    title: "Model examen 2020 (2)",
+    totalPoints: 80,
+    problems: [
+      {
+        id: "md20-2-1",
+        number: "1",
+        points: 20,
+        topic: "analiza",
+        statement: `**[Analiză și proiectare — 20p]**\n\nSe consideră același algoritm ca în Model 2020 (1), dar cu bucle:\n\nfor (i = n; i >= 2; i -= 2)\n  for (j = n-999999; j >= 3; j -= 999999)\n    for (k = n-1; k >= 1; k -= 100)\n      for (x = 1; x <= n-100; x += 100)\n        for (y = 1; y <= n-1; y += 3)\n          if (M[i][j][k][x][y] > 10) { s = 1; if (s == 1) return s; }\n\n**(a)** (4p) Ce problemă rezolvă?\n\n**(b)** (5p) Algoritm nedeterminist.\n\n**(c)** (1p) Model de calcul.\n\n**(d)** (6p) Complexitate caz nefavorabil.\n\n**(e)** (4p) Complexitate caz favorabil.`,
+        hints: [
+          "Similar cu model-2020-1, dar buclele au pași diferiți.",
+          "Algoritmul nedeterminist: choose pentru fiecare index, constrângeri diferite.",
+          "Early return la s == 1.",
+        ],
+        solution: `**(a) Problemă:**\n\nAceeași ca Model 2020 (1): determină dacă ∃ celulă M[i][j][k][x][y] > 10, cu mulțimile de indici date de bucle.\n\n**(b) Algoritm nedeterminist:**\n\n\`\`\`\nchoose i in {n, n-2, n-4, ..., ≥2};\nchoose j in {n-999999, n-999999-999999, ..., ≥3};\nchoose k in {n-1, n-101, n-201, ..., ≥1};\nchoose x in {1, 101, 201, ..., ≤ n-100};\nchoose y in {1, 4, 7, ..., ≤ n-1};\nif (M[i][j][k][x][y] > 10) { success; }\nelse { failure; }\n\`\`\`\n\n**(c) Model uniform.**\n\n**(d) Caz nefavorabil:** O(n⁵) (toate buclele se execută complet, fără early return).\n\n**(e) Caz favorabil:** O(1) — dacă M[n][n-999999][n-1][1][1] = 11.`,
+      },
+      {
+        id: "md20-2-2",
+        number: "2",
+        points: 20,
+        topic: "prob",
+        statement: `**[Analiză probabilistă — 20p]**\n\nAceeași problemă ca Model 2020 (1) Q2, dar cu distribuția: p₀=9/24, p₁=2/24, p₂=6/24, p₃=0/24, p₄=5/24, p₅=2/24, iar v e aleasă uniform din {0,4}.\n\n**(a)** (5p) Algoritm.\n\n**(b)** (5p) Valorile lui C(n).\n\n**(c)** (5p) P(C(n) = x).\n\n**(d)** (5p) Numărul mediu.`,
+        hints: [
+          "Algoritmul: parcurge de la dreapta la stânga, se oprește la prima potrivire.",
+          "pᵥ pentru v ∈ {0,4}: p₀=9/24, p₄=5/24.",
+          "P(C(n)=x) = (1/2)·[(1−9/24)ˣ⁻¹·9/24 + (1−5/24)ˣ⁻¹·5/24].",
+        ],
+        solution: `**(a) Algoritmul:** același ca la Model 2020 (1): parcurgere de la dreapta la stânga.\n\n**(b) C(n) ∈ {1, 2, ..., n}.**\n\n**(c) P(C(n) = x):**\n\nP(C(n) = x) = (1/2)·(1−9/24)ˣ⁻¹·(9/24) + (1/2)·(1−5/24)ˣ⁻¹·(5/24)\n\n**(d) Numărul mediu:**\n\nM(C(n)) = Σᵢ₌₁ⁿ i · P(C(n) = i).`,
+      },
+      {
+        id: "md20-2-3",
+        number: "3",
+        points: 20,
+        topic: "greedy",
+        statement: `**[Greedy — 20p]**\n\nFie B = {1, 5, 19, 25}. Aceeași problemă ca Model 2020 (1) Q3.\n\n**(a)** (5p) Contraexemplu pentru greedy.\n\n**(b)** (5p) Arborele subproblemelor.\n\n**(c)** (5p) Modificare pentru optimalitate.\n\n**(d)** (5p) Lemă + substructură.`,
+        hints: [
+          "Pentru s=29: greedy dă 29=25+1+1+1+1 (5 bancnote), optim e 29=19+5+5 (3 bancnote).",
+          "Modificând 25→20, sistemul devine canonic.",
+        ],
+        solution: `**(a) Contraexemplu:**\n\ns = 29: greedy → 25 + 1 + 1 + 1 + 1 = 5 bancnote. Optim: 19 + 5 + 5 = 3 bancnote.\n\n**(b) Arborele (nivelurile 1-3):**\n\n\`\`\`\n                29\n     /      /      \\     \\\n   28     24       10      4\n / | \\   / | \\    / \\     |\n27 23 9 23 19 5  9  5    3\n\`\`\`\n\n**(c) Modificare:**\n\nSe păstrează numărul de elemente distincte și se înlocuiește un număr minim de valori astfel încât sistemul să devină *canonic* (greedy optim pentru orice sumă). Valoarea concretă depinde de variantă și trebuie justificată; soluția oficială nu fixează o valoare anume.\n\n**(d) Lema + substructură:**\n\n**Lemă:** pentru s > 0, fie b = max{x ∈ B | x ≤ s}. Există soluție optimă pentru s care conține b.\n**Substructură:** dacă b₁ + ... + bₖ e optimă pentru s, atunci b₂ + ... + bₖ e optimă pentru s − b₁.`,
+      },
+      {
+        id: "md20-2-4",
+        number: "4",
+        points: 20,
+        topic: "bkt",
+        statement: `**[Backtracking, NP — 20p]**\n\nAceeași problemă ca Model 2020 (1) Q4, dar cu arbore de căutare diferit.\n\n**(a)** (10p) Formulă pentru arborele dat.\n\n**(b)** (10p) Reducere 2-COL ≤ₚ SAT, cu exemplu pe 5 noduri și 4 muchii.`,
+        hints: [
+          "2-COL e mai simplă decât 4-COL: fiecare nod are 2 variabile (b_{x,1}, b_{x,2}).",
+          "Constrângeri: b_{x,1} XOR b_{x,2} (o culoare), și pentru muchii: b_{x,c} → ¬b_{y,c}.",
+        ],
+        solution: `**(a) Construcția formulei:**\n\nSimilar cu Model 2020 (1): se aplică aceeași strategie bottom-up, asociind subformule fiecărui nod.\n\n**(b) Reducerea 2-COL ≤ₚ SAT:**\n\nPentru fiecare nod x, se creează 2 variabile: b_{x,1}, b_{x,2}.\n\nConstrângeri:\n1. Exact o culoare: (b_{x,1} ∨ b_{x,2}) ∧ (¬b_{x,1} ∨ ¬b_{x,2})\n2. Muchii: pentru {x,y}, (b_{x,c} → ¬b_{y,c}) pentru c ∈ {1,2}\n\nExemplu (5 noduri, 4 muchii): se creează variabilele și constrângerile corespunzătoare.`,
+      },
+    ],
+  },
+
+  {
+    id: "model-2020-3",
+    year: "2020",
+    title: "Model examen 2020 (3)",
+    totalPoints: 80,
+    problems: [
+      {
+        id: "md20-3-1",
+        number: "1",
+        points: 20,
+        topic: "analiza",
+        statement: `**[Analiză și proiectare — 20p]**\n\nAcelași algoritm cu bucle:\n\nfor (i = n-1; i >= 100; i -= 2)\n  for (j = 999999; j <= n-999999; j += 999999)\n    for (k = 999999; k <= n; k += 1)\n      for (x = n-100; x >= 3; x /= 3)\n        for (y = 999999; y <= n-3; y += 1)\n          if (M[i][j][k][x][y] > 10) s = 1;\n\n**(a)** (4p) Problemă.\n\n**(b)** (5p) Algoritm nedeterminist.\n\n**(c)** (1p) Model.\n\n**(d)** (6p) Complexitate caz nefavorabil.\n\n**(e)** (4p) Complexitate caz favorabil.`,
+        hints: [
+          "Bucle: i (n-1 → 100, pas -2), j (999999 → ..., pas 999999), k (999999 → n, pas 1), x (n-100 → 3, pas /3), y (999999 → n-3, pas 1).",
+          "Complexitate: O(n · (n/999999) · n · log n · n).",
+        ],
+        solution: `**(a) Problemă:**\n\nAceeași: există celulă M[i][j][k][x][y] > 10?\n\n**(b) Algoritm nedeterminist:**\n\n\`\`\`\nchoose i in {n-1, n-3, ..., ≥100};\nchoose j in {999999, 2·999999, ..., ≤ n-999999};\nchoose k in {999999, 999999+1, ..., ≤ n};\nchoose x in {n-100, (n-100)/3, ..., ≥3};\nchoose y in {999999, 999999+1, ..., ≤ n-3};\nif (M[i][j][k][x][y] > 10) { success; }\nelse { failure; }\n\`\`\`\n\n**(c) Model uniform.**\n\n**(d) Caz nefavorabil:** O(n · n · n · log n · n) = O(n⁴ · log n) (i, j, k, y dau câte O(n); x dă O(log n)).\n\n**(e) Caz favorabil:** O(1) — prima celulă testată e > 10.`,
+      },
+      {
+        id: "md20-3-2",
+        number: "2",
+        points: 20,
+        topic: "prob",
+        statement: `**[Analiză probabilistă — 20p]**\n\nAceeași problemă, cu distribuția: p₀=7/24, p₁=9/24, p₂=4/24, p₃=0/24, p₄=1/24, p₅=3/24, iar v e aleasă uniform din {3,5}.`,
+        hints: [
+          "p₃=0, p₅=3/24. Dacă v e aleasă din {3,5}, P(v=3)=1/2, P(v=5)=1/2.",
+          "Dar p₃=0, deci jumătate din cazuri nu găsește v în A, C(n)=n (parcurgerea completă).",
+        ],
+        solution: `**(a) Algoritm:** același — parcurgere de la dreapta la stânga.\n\n**(b) C(n) ∈ {1, ..., n}.**\n\n**(c) P(C(n) = x):**\n\nP(C(n) = x) = (1/2)·(1−0)ˣ⁻¹·0 + (1/2)·(1−3/24)ˣ⁻¹·(3/24) = (1/2)·(21/24)ˣ⁻¹·(3/24), pentru x < n.\nPentru x = n: P(C(n)=n) = (1/2)·(1 − Σₓ₌₁ⁿ⁻¹ (21/24)ˣ⁻¹·(3/24)) + 1/2.\n\n**(d) Numărul mediu:**\n\nM(C(n)) = Σᵢ₌₁ⁿ i · P(C(n) = i).`,
+      },
+      {
+        id: "md20-3-3",
+        number: "3",
+        points: 20,
+        topic: "greedy",
+        statement: `**[Greedy — 20p]**\n\nFie B = {1, 6, 8, 18}. Aceeași problemă.\n\n**(a)** (5p) Contraexemplu.\n\n**(b)** (5p) Arborele.\n\n**(c)** (5p) Modificare.\n\n**(d)** (5p) Lemă + substructură.`,
+        hints: [
+          "Pentru s=12: greedy → 8+1+1+1+1 (5 bancnote), optim → 6+6 (2 bancnote).",
+          "Modificare: schimbă 8 → 7, sistemul {1,6,7,18} e canonic.",
+        ],
+        solution: `**(a) Contraexemplu:**\n\ns = 12: greedy → 8 + 1 + 1 + 1 + 1 = 5 bancnote. Optim: 6 + 6 = 2 bancnote.\n\n**(b) Arborele:**\n\n\`\`\`\n                12\n        /       |       \\\n      11       6        4\n    / | \\     / \\       |\n  10 5  3   5   0      3\n\`\`\`\n\n**(c) Modificare:**\n\nSe păstrează numărul de elemente distincte și se înlocuiește un număr minim de valori astfel încât sistemul să devină *canonic* (greedy optim pentru orice sumă). Valoarea concretă depinde de variantă și trebuie justificată; soluția oficială nu fixează o valoare anume.\n\n**(d) Lemă + substructură:**\n\n**Lemă:** pentru s > 0, fie b = max{x ∈ B | x ≤ s}. Există soluție optimă pentru s care conține b.\n**Substructura optimă:** dacă b₁ + ... + bₖ e optimă pentru s, atunci b₂ + ... + bₖ e optimă pentru s − b₁.`,
+      },
+      {
+        id: "md20-3-4",
+        number: "4",
+        points: 20,
+        topic: "bkt",
+        statement: `**[Backtracking, NP — 20p]**\n\nAceeași problemă ca în modelele precedente, cu arbori diferiți.\n\n**(a)** (10p) Formulă propozițională pentru arborele dat.\n\n**(b)** (10p) Reducere 2-COL ≤ₚ SAT, exemplu pe 5 noduri și 4 muchii.`,
+        hints: [
+          "Aceeași strategie bottom-up ca la Modelele 2020 (1) și (2).",
+        ],
+        solution: `**(a) Formulă:**\n\nSe aplică strategia bottom-up standard: fiecare nod corespunde unei subformule construite din formulele fiilor.\n\n**(b) Reducere 2-COL ≤ₚ SAT:**\n\nIdentică cu Model 2020 (2): variabile b_{x,1}, b_{x,2}, constrângeri de exact o culoare și muchii.`,
+      },
+    ],
+  },
+
+  {
+    id: "model-partial-2015",
+    year: "2015",
+    title: "Model partial 2015",
+    totalPoints: 27,
+    problems: [
+      {
+        id: "mp15-1",
+        number: "1",
+        points: 8,
+        topic: "analiza",
+        statement: `**[Proiectare și analiză — 8p]**\n\nProblema ISINC: testarea dacă un tablou de numere întregi e ordonat strict crescător.\n\n**(a)** (1.5p) Formulare.\n\n**(b)** (1.5p) Algoritm.\n\n**(c)** (1.5p) Corectitudine.\n\n**(d)** (1.5p) Cazul cel mai nefavorabil.\n\n**(e)** (2p) Timpul pentru n = m log M.`,
+        hints: [
+          "Input: a = (a[0], ..., a[m-1]), a[i] ∈ ℤ. Output: true dacă a₀ < ... < aₘ₋₁.",
+          "Invariant: a[0..i] e ordonată strict crescător, i ≤ m−1.",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** a = (a[0], ..., a[m-1]), a[i] ∈ ℤ. **Output:** true dacă a₀ < ... < aₘ₋₁, false altfel.\n\n**(b) Algoritm:**\n\n\`\`\`\nisinc(a, m) {\n  i = 0;\n  while (i < m-1) {\n    if (a[i] >= a[i+1]) return false;\n    i = i + 1;\n  }\n  return true;\n}\n\`\`\`\n\n**(c) Corectitudine:**\n\nInvariant: a[0..i] e ordonată strict crescător, i ≤ m−1. Se menține (incrementarea doar dacă a[i] < a[i+1]). La terminare, i = m−1 ⇒ a[0..m−1] ordonat.\n\n**(d) Cazul cel mai nefavorabil:** tabloul e deja ordonat crescător.\n\n**(e) Timpul:** (m−1) log M = O(n).`,
+      },
+      {
+        id: "mp15-2",
+        number: "2",
+        points: 11,
+        topic: "analiza",
+        statement: `**[Geometrie computațională — 11p]**\n\nScopul: descrierea algoritmului lui Graham pentru CH(S) cu punctele P[0]=(1,1), P[1]=(2,6), P[2]=(3,3), P[3]=(4,2), P[4]=(5,4), P[5]=(6,5).\n\n**(a)** (2p) Punct interior.\n\n**(b)** (3p) Lista sortată polar.\n\n**(c)** (4p) Scanarea Graham.\n\n**(d)** (2p) Invariantul.`,
+        hints: [
+          "Centrul de greutate G(3.5, 3.5) e un punct interior.",
+          "Lista sortată polar: L = (P[4], P[5], P[1], P[2], P[0], P[3]).",
+        ],
+        solution: `**(a) Punct interior:** G(3.5, 3.5) — media coordonatelor.\n\n**(b) Lista sortată polar:** L = (P[4], P[5], P[1], P[2], P[0], P[3]).\n\n**(c) Scanarea Graham:**\n\nccw(P[4],P[5],P[1]) > 0 ✓ | ccw(P[5],P[1],P[2]) > 0 ✓ | ccw(P[1],P[2],P[0]) < 0 → elimină P[2] | ccw(P[5],P[1],P[0]) > 0 ✓ | ccw(P[1],P[0],P[3]) > 0 ✓ | ccw(P[0],P[3],P[4]) > 0 ✓ | ccw(P[3],P[4],P[5]) < 0 → elimină P[4] | ccw(P[0],P[3],P[5]) > 0 ✓\n\nCH = (P[5], P[1], P[0], P[3]).\n\n**(d) Invariantul:** punctele din L până la vârful curent formează un poligon convex.`,
+      },
+      {
+        id: "mp15-3",
+        number: "3",
+        points: 8,
+        topic: "analiza",
+        statement: `**[Probleme NP — 8p]**\n\n**(a)** (2p) Descrieți NEAREST NEIGHBOR și ALL NEAREST NEIGHBOR.\n\n**(b)** (3p) Reduceți NN la ANN. Tipul reducerii?\n\n**(c)** (3p) Relațiile de complexitate.`,
+        hints: [
+          "NN: (S, P) → cel mai apropiat punct de P din S.",
+          "ANN: S → vector cu cel mai apropiat vecin pentru fiecare punct.",
+        ],
+        solution: `**(a) Descriere:**\n\n**NN:** Input: S (n puncte), P. Output: cel mai apropiat punct de P din S.\n**ANN:** Input: S. Output: pentru fiecare punct, cel mai apropiat vecin.\n\n**(b) Reducerea:**\n\nSe adaugă P la S, se calculează ANN pe S∪{P}, se extrage rezultatul pentru P. Reducere Karp (un singur apel).\n\n**(c) Relații:**\n\nDacă ANN ∈ O(f(n)) ⇒ NN ∈ O(f(n) + n).\nDacă NN ∈ Ω(f(n)) ⇒ ANN ∈ Ω(f(n) − n).`,
+      },
+    ],
+  },
+
+  {
+    id: "model-partial-2016",
+    year: "2016",
+    title: "Model partial 2016",
+    totalPoints: 27,
+    problems: [
+      {
+        id: "mp16-1",
+        number: "1",
+        points: 9,
+        topic: "analiza",
+        statement: `**[Proiectare și analiză — 9p]**\n\nProblema P35: testarea dacă o listă de numere întregi include un număr divizibil cu 3 dar nu cu 5.\n\n**(a)** (1p) Formulare.\n\n**(b)** (2p) Algoritm determinist.\n\n**(c)** (2p) Corectitudine + complexitate.\n\n**(d)** (2p) Algoritm nedeterminist.\n\n**(e)** (2p) Corectitudine + complexitate nedeterminist.`,
+        hints: [
+          "Algoritmul determinist: parcurge lista, returnează true la prima potrivire.",
+          "Algoritmul nedeterminist: choose i, verifică L[i] % 3 == 0 && L[i] % 5 != 0.",
+          "Nedeterminist: O(1) timp.",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** L = (x₀, ..., xₙ₋₁), xᵢ ∈ ℤ. **Output:** true dacă ∃ i: 3|xᵢ ∧ 5∤xᵢ, false altfel.\n\n**(b) Algoritm determinist:**\n\n\`\`\`\np35(L) {\n  for (i = 0; i < L.size(); ++i)\n    if (L[i] % 3 == 0 && L[i] % 5 != 0) return true;\n  return false;\n}\n\`\`\`\n\n**(c) Corectitudine:** invariantul for: ∀j < i, ¬(3|L[j] ∧ 5∤L[j]). O(n).\n\n**(d) Algoritm nedeterminist:**\n\n\`\`\`\np35nedet(L) {\n  choose i in 0..L.size()-1;\n  if (L[i] % 3 == 0 && L[i] % 5 != 0) success;\n  else failure;\n}\n\`\`\`\n\n**(e) Corectitudine:** dacă există i cu proprietatea, există un calcul care alege acel i și face success. O(1).`,
+      },
+      {
+        id: "mp16-2",
+        number: "2",
+        points: 9,
+        topic: "analiza",
+        statement: `**[Geometrie computațională — 9p]**\n\nSe consideră linia poligonală simplă închisă L cu punctele: (1,1), (3,4), (5,0), (7,4), (9,2), (7,6), (5,2), (3,5). Algoritmul de localizare a unui punct P=(4,4).\n\n**(a)** (5p) Descrieți determinarea numărului de intersecții.\n\n**(b)** (2p) Invariantul.\n\n**(c)** (2p) Decizia interior/exterior.`,
+        hints: [
+          "Se trasează o dreaptă orizontală prin P și se numără intersecțiile cu segmentele lui L.",
+          "Un număr impar de intersecții → P e interior.",
+        ],
+        solution: `**(a) Numărul de intersecții:**\n\nSe trasează dreapta orizontală d prin P(4,4). Se analizează fiecare segment:\n- L[0]L[1]: L[1]=(3,4)=P, L[0]L[1] orizontal → se ignoră capătul din stânga.\n- L[1]L[2]: L[2]=(5,0), L[1]=P, se numără intersecția ca 0 (capătul e la x < P.x).\n- L[4]L[5]: Q între L[4] și L[5] la y=4, Q.x > P.x → count++\n- etc.\n\n**(b) Invariantul:** counter = nr. de intersecții ale lui d cu L[0..i] care schimbă starea interior/exterior.\n\n**(c) Decizia:** counter par → P exterior; counter impar → P interior. Pentru L dat, counter=2 ⇒ P exterior.`,
+      },
+      {
+        id: "mp16-3",
+        number: "3",
+        points: 9,
+        topic: "analiza",
+        statement: `**[Diametrul unei mulțimi — 9p]**\n\n**(a)** (2p) Descrieți problema diametrului.\n\n**(b)** (3p) Calculați punctele antipodale pentru S = {(1,1), (3,4), (2,0), (5,4), (6,2), (4,6), (3,1), (2,3)}.\n\n**(c)** (2p) Diametrul.\n\n**(d)** (2p) Complexitatea.`,
+        hints: [
+          "Diametrul = distanța maximă dintre două puncte din S.",
+          "Se calculează CH(S) = (P₀, P₂, P₄, P₅, P₇), apoi perechile antipodale.",
+          "Perechea antipodală cu distanța maximă dă diametrul.",
+        ],
+        solution: `**(a) Problema diametrului:**\n\n**Input:** O mulțime finită S de puncte în plan.\n**Output:** Perechea de puncte din S la distanța maximă.\n\n**(b) Puncte antipodale:**\n\nCH(S) = ⟨P₀(1,1), P₂(2,0), P₄(5,4), P₅(4,6), P₇(2,3)⟩\n\nPerechi antipodale: (P₀,P₄), (P₂,P₅), (P₄,P₀), (P₅,P₂), (P₇,P₄).\n\n**(c) Diametrul:**\n\ndist(P₂,P₅) = dist((2,0),(4,6)) = √(4+36) = √40 ≈ 6.32.\n\n**(d) Complexitate:**\n\nO(n log n) cu Graham scan + O(h) pentru perechi antipodale.`,
+      },
+    ],
+  },
+
+  {
+    id: "model-partial-2017",
+    year: "2017",
+    title: "Model partial 2017",
+    totalPoints: 27,
+    problems: [
+      {
+        id: "mp17-1",
+        number: "1",
+        points: 9,
+        topic: "analiza",
+        statement: `**[Proiectare și analiză — 9p]**\n\nProblema ST (set test): testarea dacă o listă de elemente reprezintă o mulțime.\n\n**(a)** (2p) Formulare.\n\n**(b)** (3p) Algoritm determinist.\n\n**(c)** (2p) Corectitudine.\n\n**(d)** (2p) Complexitate.`,
+        hints: [
+          "Input: L = (a₀, ..., aₙ₋₁), aᵢ ∈ A. Output: true dacă ∀i≠j, aᵢ ≠ aⱼ.",
+          "Algoritm: două bucle for, compară fiecare pereche (i,j) cu i<j.",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** L = (a₀, ..., aₙ₋₁), n ≥ 0, aᵢ ∈ A.\n**Output:** true dacă ∀i≠j ⇒ aᵢ ≠ aⱼ; false dacă ∃i≠j cu aᵢ = aⱼ.\n\n**(b) Algoritm:**\n\n\`\`\`\nST(L) {\n  if (L.size() == 0) return true;\n  for (i=0; i < L.size()-1; ++i)\n    for (j=i+1; j < L.size(); ++j)\n      if (L[i] == L[j]) return false;\n  return true;\n}\n\`\`\`\n\n**(c) Corectitudine:**\n\nInvariant primul for: ∀k<ℓ<i, L[k] ≠ L[ℓ]. La terminare, toate perechile verificate.\n\n**(d) Complexitate:**\n\nO(n²) — n(n−1)/2 comparații în cazul cel mai nefavorabil (când L e mulțime).`,
+      },
+      {
+        id: "mp17-2",
+        number: "2",
+        points: 9,
+        topic: "prob",
+        statement: `**[Algoritmi probabiliști — 9p]**\n\nAlgoritmul unulDinTrei() (vezi Partial 2017-A).\n\n**(a)** (3p) Descrieți în Alk.\n\n**(b)** Probabilitățile: i. (1p) 1 apel, ii. (1p) 2 apeluri, iii. (2p) n apeluri.\n\n**(c)** (2p) Numărul mediu de apeluri.`,
+        hints: [
+          "Algoritmul e recursiv: alege 0 (returnează 0) sau 1 (returnează 1−unulDinTrei()).",
+          "pₙ = 1/2^(n+1).",
+        ],
+        solution: `**(a) Algoritm:**\n\n\`\`\`\nunulDinTrei() {\n  n = random(2);\n  if (n == 0) return 0;\n  else return 1 - unulDinTrei();\n}\n\`\`\`\n\n**(b) Probabilități:**\n\np₁ = 1/2², p₂ = 1/2³, pₙ = 1/2^(n+1).\n\n**(c) Numărul mediu:**\n\nM = Σₙ≥₁ n · 1/2^(n+1) = 1.`,
+      },
+      {
+        id: "mp17-3",
+        number: "3",
+        points: 9,
+        topic: "analiza",
+        statement: `**[Geometrie computațională — 9p]**\n\n**(a)** (2p) Funcția cmp(P,Q,R).\n\n**(b)** (2p) Exemple.\n\n**(c)** (2p) lowermost(S).\n\n**(d)** (2p) sort(S).\n\n**(e)** (1p) Complexitate.`,
+        hints: [
+          "cmp: se bazează pe ccw. Dacă ccw(P,Q,R) = 0, se compară distanțele.",
+          "lowermost: punctul cu y minim.",
+        ],
+        solution: `**(a) cmp:**\n\n\`\`\`\ncmp(P, Q, R) {\n  if (ccw(P, Q, R) > 0) return -1;\n  if (ccw(P, Q, R) < 0) return 1;\n  d1 = dist2(P, Q); d2 = dist2(P, R);\n  if (d1 == d2) return 0;\n  if (d1 < d2) return -1;\n  else return 1;\n}\n\`\`\`\n\n**(b) Exemple:** cmp((2,2),(4,3),(3,4)) → -1; cmp((2,2),(4,6),(3,4)) → 1.\n\n**(c) lowermost:** O(n) — caută punctul cu y minim.\n\n**(d) sort:** două for-uri + cmp pentru sortare polară.\n\n**(e) Complexitate:** O(n²).`,
+      },
+    ],
+  },
+
+  {
+    id: "model-partial-2018",
+    year: "2018",
+    title: "Model partial 2018",
+    totalPoints: 36,
+    problems: [
+      {
+        id: "mp18-1",
+        number: "1",
+        points: 12,
+        topic: "greedy",
+        statement: `**[Greedy — 12p]**\n\nProblema: dându-se o mulțime I de intervale închise, găsiți cea mai mică mulțime de puncte P astfel încât fiecare interval să includă cel puțin un punct din P.\n\n**(a)** (3p) Formulare.\n\n**(b)** (3p) Contraexemplu.\n\n**(c)** (4p) Strategie corectă + argumentare.\n\n**(d)** (2p) Implementare Alk.`,
+        hints: [
+          "Similar cu Partial 2018-A Q1.",
+          "Contraexemplu: [0,10], [9,15], [8,16], [11,19], [12,18], [17,30].",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** n, s[0..n−1], f[0..n−1] cu s[i] ≤ f[i]. **Output:** m minim și p[0..m−1] cu ∀i, ∃j: pⱼ ∈ [sᵢ, fᵢ].\n\n**(b) Contraexemplu:**\n\nIntervalele [0,10],[9,15],[8,16],[11,19],[12,18],[17,30]: greedy "maximă intersectare" alege 3 puncte (14,5,25). Optim: 2 puncte (10,17).\n\n**(c) Strategie corectă:**\n\nSortează după f[i]. La fiecare pas, alege ultimul sfârșit al intervalelor neacoperite.\n**Argumentare:** orice soluție optimă poate fi transformată în soluția greedy.\n\n**(d) Implementare:**\n\n\`\`\`\ngreedy(n, s, f) {\n  acoperit = [];\n  for (i=0; i<n; ++i) acoperit[i] = 0;\n  p = []; m = 0;\n  for (i=0; i<n; ++i)\n    if (!acoperit[i]) {\n      p[m++] = f[i];\n      for (j=i; j<n; ++j)\n        if (s[j] <= f[i] && f[i] <= f[j])\n          acoperit[j] = 1;\n    }\n  return p;\n}\n\`\`\``,
+      },
+      {
+        id: "mp18-2",
+        number: "2",
+        points: 12,
+        topic: "dp1",
+        statement: `**[Programare Dinamică — 12p]**\n\nLungimea celei mai lungi 1-subsecvențe (elemente consecutive diferă prin cel mult 1).\n\n**(a)** (3p) Formulare.\n\n**(b)** (3p) d(n−1).\n\n**(c)** (4p) Recurența.\n\n**(d)** (2p) Substructura optimă.`,
+        hints: [
+          "d(i) = lungimea max. a unei subsecvențe care începe la i.",
+          "d(i) = 1 + max({0} ∪ {d(j) | i<j<n ∧ |S[i]−S[j]| ≤ 1}).",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** n, S[0..n−1]. **Output:** max l cu ∃ i₀<...<iₗ₋₁, |S[iⱼ]−S[iⱼ₊₁]| ≤ 1.\n\n**(b) d(n−1) = 1.**\n\n**(c) Recurența:** d(i) = 1 + max({0} ∪ {d(j) | i<j<n ∧ |S[i]−S[j]| ≤ 1}).\n\n**(d) Substructură optimă:** dacă i₀,...,iₗ e optimă, atunci i₁,...,iₗ e optimă pentru subproblema de la i₁.`,
+      },
+      {
+        id: "mp18-3",
+        number: "3",
+        points: 12,
+        topic: "bkt",
+        statement: `**[NP — 12p]**\n\n**(a)** (3p) Definiți NP.\n\n**(b)** (3p) Arătați CLIQUE ∈ NP.\n\n**(c)** (3p) Reducerea necesară.\n\n**(d)** (3p) NP-completitudinea CLIQUE.`,
+        hints: [
+          "CLIQUE ∈ NP: ghicire + verificare O(n²).",
+          "Reducem INDEPENDENT-SET la CLIQUE (complement).",
+        ],
+        solution: `**(a) NP:** clasa problemelor de decizie rezolvabile de un algoritm nedeterminist în timp polinomial.\n\n**(b) CLIQUE ∈ NP:**\n\n\`\`\`\nclique(V, E, k) {\n  for each v in V: choose x[v] in {0,1};\n  if (count < k) failure;\n  for each u,v with x[u]=x[v]=1:\n    if {u,v} ∉ E failure;\n  success;\n}\n\`\`\`\n\n**(c) Reducere:** de la INDEPENDENT-SET la CLIQUE (prin complementul grafului).\n\n**(d) NP-completitudine:** CLIQUE ∈ NP. Reducem INDEPENDENT-SET la CLIQUE: AlgIS(V,E,k) = AlgClique(V, complement(E), k).`,
+      },
+    ],
+  },
+
+  {
+    id: "model-sesiune-2021",
+    year: "2021",
+    title: "Subiecte sesiune 2021",
+    totalPoints: 60,
+    problems: [
+      {
+        id: "ms21-1",
+        number: "1",
+        points: 15,
+        topic: "kmp",
+        statement: `**[KMP — 15p]**\n\n**(a)** (6p) Scrieți în Alk un algoritm iterativ care determină frontiera (bordura) de lungime maximă maxFr(v), folosind definiția: u e frontieră a lui v dacă e și prefix și sufix.\n\n**(b)** (9p) Determinați timpul de execuție pentru cazul cel mai nefavorabil: dimensiunea instanței, operațiile analizate, tipul de cost, cazul cel mai nefavorabil, timpul per iterație, numărul de iterații, timpul total.`,
+        hints: [
+          "maxFr(v): pentru i=1..n-1, verifică dacă v[n-i..n-1] e prefix (isBorder).",
+          "isBorder(v, k): compară v[0..] cu v[k..] până la sfârșit.",
+          "Cazul cel mai nefavorabil: orice subșir e frontieră, T(n) = O(n²).",
+        ],
+        solution: `**(a) Algoritm:**\n\n\`\`\`\nisBorder(v, k) {\n  i = 0;\n  while (k < v.size() && v[i] == v[k]) { i++; k++; }\n  return k == v.size();\n}\n\nmaxFr(v) {\n  n = v.size(); k = 0;\n  for (i = 1; i < n; ++i)\n    if (isBorder(v, n-i)) k = i;\n  if (k == 0) return [];\n  return [v[j] | j from [0..k-1]];\n}\n\`\`\`\n\n**(b) Analiză:**\n\n- Dimensiunea: n = v.size().\n- Operații: comparații între elemente.\n- Cost: uniform O(1) per comparație.\n- Caz nefavorabil: orice subșir v[0..i−1] e frontieră.\n- Timp per iterație: O(i).\n- Nr. de iterații: n−1.\n- T(n) = Σᵢ₌₁ⁿ⁻¹ O(i) = O(n²).`,
+      },
+      {
+        id: "ms21-2",
+        number: "2",
+        points: 15,
+        topic: "regex",
+        statement: `**[Expresii regulate — 15p]**\n\n**(a)** (7p) Construiți automatul pentru expresia b(cb)*b(a)*b.\n\n**(b)** (8p) Căutarea unui șir descris de această expresie în textul "abbcbbaabaabababba" (tabel stare/decizie).`,
+        hints: [
+          "Automatul: start→0→1→2→3→4 cu tranziții pe b, c, a.",
+          "Căutarea: de la fiecare poziție de start, se consumă caractere urmând tranzițiile.",
+        ],
+        solution: `**(a) Automatul:**\n\n\`\`\`\nstart → 0 --b→ 1 --c→ 2 --b→ 3 --a→ 3 --b→ 4\n                 |              |\n                 └──b──┘        └──a──┘\n\`\`\`\n\n**(b) Căutare în text:**\n\n| i | j | starea | decizie |\n|---|---|--------|--------|\n| 0 | 0 | 0 | nepotrivire, i++ |\n| 1 | 1 | 0 | potrivire (b), j++ |\n| 1 | 2 | 1 | potrivire (b), j++ |\n| 1 | 3 | 3 | nepotrivire, i++, j=i |\n| 2 | 2 | 0 | potrivire (b), j++ |\n| 2 | 3 | 1 | potrivire (c), j++ |\n| 2 | 4 | 2 | potrivire (b), j++ |\n| 2 | 5 | 1 | potrivire (b), j++ |\n| 2 | 6 | 3 | potrivire (a), j++ |\n| 2 | 7 | 3 | potrivire (a), j++ |\n| 2 | 8 | 3 | potrivire (b), j++ |\n| 2 | 9 | 4 | șir acceptat la poziția 2: "bcbbaab" |`,
+      },
+      {
+        id: "ms21-3",
+        number: "3",
+        points: 30,
+        topic: "dp1",
+        statement: `**[Programare Dinamică — 30p]**\n\nProblema rucsacului discret (0-1 Knapsack).\n\n**(a)** (5p) Formulați problema ca pereche input-output.\n\n**(b)** (10p) Definiți subproblema, recurența, cazurile de bază.\n\n**(c)** (10p) Implementați algoritmul DP.\n\n**(d)** (5p) Complexitatea.`,
+        hints: [
+          "Input: n obiecte, c[0..n-1] (câștig), g[0..n-1] (greutate), G (capacitate).",
+          "dp[i][w] = câștigul maxim folosind primele i obiecte și capacitatea w.",
+          "Recurența: dp[i][w] = max(dp[i-1][w], dp[i-1][w-g[i-1]] + c[i-1]) dacă g[i-1] ≤ w.",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** n ∈ ℕ, c[0..n−1] ∈ ℕⁿ, g[0..n−1] ∈ ℕⁿ, G ∈ ℕ.\n**Output:** câștigul maxim total cu obiecte de greutate totală ≤ G.\n\n**(b) Subproblema DP:**\n\ndp[i][w] = câștigul maxim folosind primele i obiecte și capacitatea w.\n\n**Cazuri de bază:** dp[0][w] = 0, dp[i][0] = 0.\n\n**Recurența:**\ndp[i][w] = max(dp[i-1][w], dp[i-1][w-g[i-1]] + c[i-1]) dacă g[i-1] ≤ w, altfel dp[i-1][w].\n\n**(c) Implementare:**\n\n\`\`\`\nknapsack(n, c, g, G) {\n  for w = 0 to G: dp[0][w] = 0;\n  for i = 1 to n:\n    for w = 0 to G:\n      if (g[i-1] <= w)\n        dp[i][w] = max(dp[i-1][w], dp[i-1][w-g[i-1]] + c[i-1]);\n      else\n        dp[i][w] = dp[i-1][w];\n  return dp[n][G];\n}\n\`\`\`\n\n**(d) Complexitate:**\n\nO(n·G) timp, O(n·G) spațiu (sau O(G) cu optimizare).`,
+      },
+    ],
+  },
+
+  {
+    id: "model-sesiune",
+    year: "—",
+    title: "Model sesiune",
+    totalPoints: 60,
+    problems: [
+      {
+        id: "mses-1",
+        number: "1",
+        points: 20,
+        topic: "analiza",
+        statement: `**[Analiză — 20p]**\n\nSe consideră algoritmul:\n\ns = 0;\nfor (i = 0; i*i < n; i = i*2)\n  for (j = 0; j*j*j < n; j = j*2)\n    for (k = 0; k < n; k = k*3)\n      for (x = 0; x < n; x = x*3)\n        for (y = 0; y*y < n; y = y+2)\n          if (M[i][j][k][x][y] > 10) { s = 1; break; }\nreturn s;\n\n**(a)** (4p) Problemă.\n\n**(b)** (6p) Algoritm nedeterminist.\n\n**(c)** (6p) Complexitate caz nefavorabil.\n\n**(d)** (4p) Complexitate caz favorabil.`,
+        hints: [
+          "Buclele au pași: i (0 → √n, dublare), j (0 → ∛n, dublare), k (0 → n, triplare), x (0 → n, triplare), y (0 → √n, pas 2).",
+        ],
+        solution: `**(a) Problemă:**\n\nAceeași: există celulă M[i][j][k][x][y] > 10?\n\n**(b) Algoritm nedeterminist:**\n\n\`\`\`\nchoose i in {0, 2, 4, ...} s.t. i*i < n;\nchoose j in {0, 2, 4, ...} s.t. j*j*j < n;\nchoose k in {0, 3, 9, ...} s.t. k < n;\nchoose x in {0, 3, 9, ...} s.t. x < n;\nchoose y in {0, 2, 4, ...} s.t. y*y < n;\nif (M[i][j][k][x][y] > 10) { success; }\nelse { failure; }\n\`\`\`\n\n**(c) Caz nefavorabil:**\n\nO(log√n · log∛n · log₃n · log₃n · √n) = O(√n · log⁴ n).\n\n**(d) Caz favorabil:** O(1).`,
+      },
+      {
+        id: "mses-2",
+        number: "2",
+        points: 20,
+        topic: "prob",
+        statement: `**[Algoritmi probabiliști — 20p]**\n\nAlgoritmul f() care nu primește intrare:\n\nf() {\n  k = random(6);\n  switch (k) {\n    case 0: return 2;\n    case 1: return 0;\n    case 2: return f();\n    case 3: return f();\n    case 4: return 2;\n    case 5: return f();\n  }\n}\n\n**(a)** (6p) P(algoritmul se oprește după exact i apeluri).\n\n**(b)** (5p) P(rulează la infinit).\n\n**(c)** (3p) P(întoarce 0).\n\n**(d)** (3p) P(întoarce 1).\n\n**(e)** (3p) P(întoarce 2).`,
+        hints: [
+          "Din 6 cazuri, 3 fac apel recursiv (cazurile 2,3,5 — prob. 3/6=1/2). 3 se opresc (0,1,4 — prob. 3/6=1/2).",
+          "Dintre cele care se opresc: case 0 și 4 întorc 2, case 1 întoarce 0. Niciun caz nu întoarce 1.",
+        ],
+        solution: `**(a) P(exact i apeluri):**\n\nProbabilitatea de a face un apel recursiv: 3/6 = 1/2. Probabilitatea de a se opri: 1/2.\nP(i) = (1/2)ⁱ · (1/2) = 1/2^(i+1).\n\n**(b) P(infinit):**\n\nlim_{i→∞} (1/2)ⁱ = 0. Algoritmul se oprește aproape sigur.\n\n**(c) P(0):**\n\nDintre cazurile care se opresc, doar case 1 întoarce 0 (prob. 1/6). P(0) = (1/2)·(1/3) = 1/6 · Σᵢ≥₀ (1/2)²ⁱ = ...\nDe fapt, rezolvarea formală: P(0) = (1/6) + (3/6)·P(0) ⇒ P(0) = 1/3.\n\n**(d) P(1):**\n\nNiciun caz nu întoarce 1 direct. P(1) = (3/6)·P(1) ⇒ P(1) = 0.\n\n**(e) P(2):**\n\n(2/6) + (3/6)·P(2) ⇒ P(2) = 2/3.`,
+      },
+      {
+        id: "mses-3",
+        number: "3",
+        points: 20,
+        topic: "dp1",
+        statement: `**[Programare Dinamică — 20p]**\n\nSe consideră algoritmul recursiv:\n\nd(n, m, k) {\n  if (n <= 0 || m <= 0 || k <= 0) return 0;\n  best = 0;\n  for (i = 0; i < n; i += 2)\n    for (j = 0; j*j < m; j += 1)\n      temp = d(i, j, k-1);\n      if (temp + a[i][j] * b[j][k] > best)\n        best = temp + a[i][j] * b[j][k];\n  return best;\n}\n\n**(a)** (6p) Complexitatea-timp în cazul cel mai nefavorabil.\n\n**(b)** (8p) Proiectați un algoritm echivalent cu memoizare.\n\n**(c)** (6p) Justificați corectitudinea și calculați complexitatea.`,
+        hints: [
+          "Algoritmul fără memoizare are complexitate exponențială.",
+          "Cu memoizare, se calculează fiecare triplet (n,m,k) o singură dată.",
+        ],
+        solution: `**(a) Complexitate fără memoizare:**\n\nT(n,m,k) = Σᵢ Σⱼ T(i,j,k-1) + O(n·√m). Rezolvând, T = O((n²·m)^k) exponențial.\n\n**(b) Algoritm cu memoizare:**\n\n\`\`\`\nmemo = {};\nd_memo(n, m, k) {\n  if (n <= 0 || m <= 0 || k <= 0) return 0;\n  if (memo[(n,m,k)] !== undefined) return memo[(n,m,k)];\n  best = 0;\n  for (i = 0; i < n; i += 2)\n    for (j = 0; j*j < m; j += 1)\n      temp = d_memo(i, j, k-1);\n      if (temp + a[i][j] * b[j][k] > best)\n        best = temp + a[i][j] * b[j][k];\n  memo[(n,m,k)] = best;\n  return best;\n}\n\`\`\`\n\n**(c) Corectitudine + complexitate:**\n\nAlgoritmul cu memoizare calculează fiecare subproblemă o singură dată. Numărul de subprobleme = n·m·k. Pentru fiecare, se fac O(n·√m) operații. Total: O(n²·m^(3/2)·k).`,
+      },
+    ],
+  },
+
+  {
+    id: "model-partial-2022",
+    year: "2022",
+    title: "Model partial 2022",
+    totalPoints: 40,
+    problems: [
+      {
+        id: "mp22-1",
+        number: "1",
+        points: 15,
+        topic: "analiza",
+        statement: `**[Proiectare și analiză — 15p]**\n\nNumerele hexagonale: H(n) = n(2n−1), n ≥ 1 (1, 6, 15, 28, 45, ...). Problema P1: determină dacă un șir de numere naturale include cel puțin două numere hexagonale.\n\n**(a)** (3p) Formulați P1 ca pereche (Input, Output).\n\n**(b)** (3p) Scrieți isHexagonal(x) în Alk.\n\n**(c)** (3p) Scrieți algoritmul care rezolvă P1.\n\n**(d)** (2p) Justificați corectitudinea.\n\n**(e)** (4p) Determinați complexitatea.`,
+        hints: [
+          "Input: s = (x₀, ..., xₙ₋₁), xᵢ ∈ ℕ. Output: true dacă există i<j cu ambele hexagonale.",
+          "x e hexagonal ⇔ √(1+8x) e întreg impar și (1+√(1+8x)) % 4 == 0.",
+          "Corectitudine: invariantul — s[0..k-1] include cel mult un număr hexagonal.",
+        ],
+        solution: `**(a) Formulare:**\n\n**Input:** s = (x₀, ..., xₙ₋₁), n > 0, xᵢ ∈ ℕ.\n**Output:** true dacă ∃ i < j cu isHexagonal(xᵢ) ∧ isHexagonal(xⱼ), false altfel.\n\n**(b) isHexagonal:**\n\n\`\`\`\nisHexagonal(x) {\n  if (x <= 0) return false;\n  a = 1 + 8 * x;\n  b = int(sqrt(a));\n  return (b*b == a && (1+b) % 4 == 0);\n}\n\`\`\`\n\n**(c) Algoritm P1:**\n\n\`\`\`\nhasHexaPair(s) {\n  i = -1;\n  for (k=0; k < s.size(); ++k)\n    if (isHexagonal(s[k])) {\n      if (i < 0) i = k;\n      else return true;\n    }\n  return false;\n}\n\`\`\`\n\n**(d) Corectitudine:**\n\nInvariantul for: subșirul s[0..k−1] include cel mult un număr hexagonal.\n\n**(e) Complexitate:**\n\nO(n) — n apeluri isHexagonal, fiecare O(1).`,
+      },
+      {
+        id: "mp22-2",
+        number: "2",
+        points: 10,
+        topic: "prob",
+        statement: `**[Algoritmi probabiliști — 10p]**\n\nSe consideră algoritmul:\n\nalg2(S) {\n  if (S == {}) failure;\n  uniform x from S;\n  S = S \\ {x};\n  while (S != {}) {\n    uniform y from S;\n    if (y < x) x = y;\n    S = S \\ {y};\n  }\n  return x;\n}\n\n**(a)** (3p) Descrieți problema rezolvată.\n\n**(b)** (5p) Calculați numărul mediu de execuții ale atribuirii x = y.\n\n**(c)** (2p) E metoda potrivită pentru căutarea deterministă liniară?`,
+        hints: [
+          "Algoritmul găsește minimul dintr-o mulțime S prin eșantionare aleatoare fără repunere.",
+          "Xₖ = indicator pentru atribuirea x=y la iterația k. pₖ = 1/(k+1).",
+          "Numărul mediu = Hₙ₋₁ ≈ ln n.",
+        ],
+        solution: `**(a) Problemă:**\n\n**Input:** S = {a₀, ..., aₙ₋₁} dintr-o mulțime total ordonată.\n**Output:** Cel mai mic element din S.\n\n**(b) Numărul mediu de atribuiri:**\n\nFie Xₖ variabila indicatoare pentru atribuirea x=y la iterația k. pₖ = P(Xₖ=1) = 1/(k+1) (probabilitatea ca al k-lea element extras să fie minimul primelor k+1 elemente).\n\nM(T) = Σₖ₌₁ⁿ⁻¹ 1/(k+1) = Hₙ₋₁ = Θ(ln n).\n\n**(c) Potrivire:**\n\nDa. Comportarea algoritmului probabilist e echivalentă cu cea a algoritmului determinist când datele sunt permutate aleatoriu.`,
+      },
+      {
+        id: "mp22-3",
+        number: "3",
+        points: 15,
+        topic: "bkt",
+        statement: `**[Probleme NP-complete — 15p]**\n\n**(a)** (4p) Dacă P ≠ NP, atunci nicio problemă NP-completă nu e în P. Justificați.\n\n**(b)** (3p) Definiți INDEPENDENT-SET și CLIQUE.\n\n**(c)** (4p) Arătați că CLIQUE ∈ NP.\n\n**(d)** (4p) Găsiți o reducere polinomială Karp de la CLIQUE la INDEPENDENT-SET.`,
+        hints: [
+          "Dacă o problemă NP-completă ar fi în P, atunci P = NP (prin definiția NP-completitudinii).",
+          "CLIQUE ∈ NP: ghicire + verificare O(n²).",
+          "Reducerea: complementul grafului — o clică în G = mulțime independentă în complementul lui G.",
+        ],
+        solution: `**(a) P ≠ NP ⇒ nicio NP-completă în P:**\n\nPresupunem prin absurd că X e NP-completă și X ∈ P. Prin definiția NP-completitudinii, orice problemă din NP se reduce polinomial la X. Combinând reducerea polinomială cu algoritmul polinomial pentru X, obținem o rezolvare polinomială pentru orice problemă din NP ⇒ P = NP (contradicție).\n\n**(b) Definiții:**\n\n**INDEPENDENT-SET:** Input: G=(V,E), k∈ℕ. Output: ∃ V'⊆V, |V'|≥k, ∀{u,v}∈E: u∉V' ∨ v∉V'?\n**CLIQUE:** Input: G=(V,E), k∈ℕ. Output: ∃ V'⊆V, |V'|≥k, ∀u≠v∈V': {u,v}∈E?\n\n**(c) CLIQUE ∈ NP:**\n\n\`\`\`\nclique(V, E, k) {\n  for each v in V: choose x[v] in {0,1};\n  if (count < k) failure;\n  for each u,v with x[u]=x[v]=1:\n    if {u,v} ∉ E failure;\n  success;\n}\n\`\`\`\n\n**(d) Reducere CLIQUE ≤ₚ INDEPENDENT-SET:**\n\n\`\`\`\nAlgIS_from_CLIQUE(V, E, k) {\n  E' = complement(E);\n  return AlgIS(V, E', k);\n}\n\`\`\`\n\nO clică în G = mulțime independentă în complement. Reducerea e O(n²).`,
+      },
+    ],
+  },
+];

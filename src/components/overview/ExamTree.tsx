@@ -171,7 +171,12 @@ function ExamTreeFlow() {
       }
     }
 
-    return getLayoutedElements(nodeList, edgeList);
+    return getLayoutedElements(nodeList, edgeList, {
+      ringRadiusX: 440,
+      ringRadiusY: 240,
+      nodeRadialOffset: 80,
+      nodeGap: 44,
+    });
   }, [expandedTopicId, toggleExpand, handleExamClick, isProblemSolved]);
 
   useEffect(() => {
@@ -183,7 +188,7 @@ function ExamTreeFlow() {
   return (
     <div
       className="glass-panel rounded-xl overflow-hidden"
-      style={{ height: 520 }}
+      style={{ height: 560 }}
     >
       <div className="px-4 pt-3 pb-1 flex items-center justify-between pointer-events-none">
         <div className="flex items-center gap-2">

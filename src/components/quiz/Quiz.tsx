@@ -10,8 +10,30 @@ interface Props {
   alreadyPassed?: boolean;
 }
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function shuffleQuestions(qs: QuizQuestion[]): QuizQuestion[] {
+  return qs.map((q) => {
+    const indices = q.options.map((_, i) => i);
+    const shuffledIndices = shuffleArray(indices);
+    return {
+      ...q,
+      options: shuffledIndices.map((i) => q.options[i]),
+      correctIndex: shuffledIndices.indexOf(q.correctIndex),
+    };
+  });
+}
+
 export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPassed }: Props) {
-  const allIndices = useMemo(() => questions.map((_, i) => i), [questions]);
+  const shuffled = useMemo(() => shuffleQuestions(questions), [questions]);
+  const allIndices = useMemo(() => shuffled.map((_, i) => i), [shuffled]);
   const [round, setRound] = useState<number[]>(allIndices);
   const [roundIndex, setRoundIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -30,7 +52,7 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
     setRetaking(true);
   }
 
-  const q = questions[round[roundIndex]];
+  const q = shuffled[round[roundIndex]];
   const answered = selected !== null;
   const isCorrect = selected === q.correctIndex;
 

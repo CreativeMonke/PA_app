@@ -7,7 +7,6 @@ interface ExamTopicNodeData extends Record<string, unknown> {
   title: string;
   problemCount: number;
   isExpanded: boolean;
-  hasNext: boolean;
   onToggle: () => void;
 }
 
@@ -24,23 +23,23 @@ function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
         padding: "10px 14px",
         width: 170,
         background: isExpanded
-          ? "linear-gradient(180deg, rgba(251,191,36,0.13), rgba(251,191,36,0.05))"
+          ? "linear-gradient(180deg, rgba(251,191,36,0.15), rgba(251,191,36,0.06))"
           : hasProblems
-            ? "linear-gradient(180deg, rgba(251,191,36,0.06), rgba(255,255,255,0.02))"
+            ? "rgba(251,191,36,0.07)"
             : "rgba(255,255,255,0.03)",
         border: `1px solid ${
           isExpanded
-            ? "rgba(251,191,36,0.4)"
+            ? "rgba(251,191,36,0.40)"
             : hasProblems
               ? "rgba(251,191,36,0.25)"
               : "rgba(255,255,255,0.06)"
         }`,
         boxShadow: isExpanded
-          ? "0 0 20px rgba(251,191,36,0.10), inset 0 1px 0 rgba(251,191,36,0.12)"
+          ? "0 0 20px rgba(251,191,36,0.12), inset 0 1px 0 rgba(251,191,36,0.10)"
           : hasProblems
-            ? "0 0 12px rgba(251,191,36,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"
-            : "inset 0 1px 0 rgba(255,255,255,0.03)",
-        transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
+            ? "0 0 12px rgba(251,191,36,0.08)"
+            : "none",
+        transition: "all 0.2s",
       }}
       onClick={onToggle}
     >
@@ -61,9 +60,8 @@ function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
           </span>
         );
       })}
-
       <div className="flex items-center gap-2">
-        <span style={{ fontSize: 18 }}>{icon}</span>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
         <span className="text-[11px] font-medium truncate flex-1 min-w-0" style={{ color: "#e2e8f0" }}>
           {title}
         </span>
@@ -73,31 +71,27 @@ function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
             padding: "1px 6px",
             fontSize: 10,
             fontWeight: 600,
-            background: hasProblems ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.06)",
-            color: hasProblems ? "var(--color-amber)" : "rgba(255,255,255,0.35)",
+            background: hasProblems ? "rgba(251,191,36,0.18)" : "rgba(255,255,255,0.06)",
+            color: hasProblems ? "#fbbf24" : "rgba(255,255,255,0.35)",
           }}
         >
           {problemCount}
         </div>
         {hasProblems && (
           <div
-            className="w-3 h-3 rounded-full flex items-center justify-center shrink-0"
+            className="flex items-center justify-center shrink-0"
             style={{
-              background: "rgba(255,255,255,0.05)",
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.06)",
               transition: "transform 0.2s",
+              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
             }}
           >
-            <div
-              style={{
-                width: 0,
-                height: 0,
-                borderLeft: "4px solid rgba(255,255,255,0.25)",
-                borderTop: "3px solid transparent",
-                borderBottom: "3px solid transparent",
-                transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                transition: "transform 0.2s",
-              }}
-            />
+            <svg width="6" height="8" viewBox="0 0 6 8" fill="none">
+              <path d="M1 1L5 4L1 7" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         )}
       </div>

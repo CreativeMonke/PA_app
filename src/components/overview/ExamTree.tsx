@@ -21,48 +21,6 @@ import RootNodeComponent from "./RootNode";
 import ExamTopicNodeComponent from "./ExamTopicNode";
 import ExamNodeComponent from "./ExamNode";
 
-interface TopicExamInfo {
-  examId: string;
-  examTitle: string;
-  problemCount: number;
-}
-
-interface TopicDataEntry {
-  problemCount: number;
-  exams: TopicExamInfo[];
-}
-
-function computeTopicData(): Map<string, TopicDataEntry> {
-  const topicMap = new Map<string, TopicDataEntry>();
-
-  for (const topic of TOPICS) {
-    topicMap.set(topic.id, { problemCount: 0, exams: [] });
-  }
-
-  for (const exam of PRACTICE_EXAMS) {
-    const countPerTopic = new Map<string, number>();
-    for (const problem of exam.problems) {
-      if (topicMap.has(problem.topic)) {
-        countPerTopic.set(
-          problem.topic,
-          (countPerTopic.get(problem.topic) || 0) + 1,
-        );
-      }
-    }
-    for (const [topicId, count] of countPerTopic) {
-      const entry = topicMap.get(topicId)!;
-      entry.problemCount += count;
-      entry.exams.push({
-        examId: exam.id,
-        examTitle: exam.title,
-        problemCount: count,
-      });
-    }
-  }
-
-  return topicMap;
-}
-
 const nodeTypes: NodeTypes = {
   root: RootNodeComponent,
   examTopic: ExamTopicNodeComponent,
@@ -75,8 +33,6 @@ function ExamTreeFlow() {
   const { isProblemSolved } = useProgressStore();
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
   const rf = useReactFlow();
-
-  const topicData = useMemo(() => computeTopicData(), []);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedTopicId((prev) => (prev === id ? null : id));
@@ -92,6 +48,27 @@ function ExamTreeFlow() {
   );
 
   const { nodes, edges } = useMemo(() => {
+    const topicExamMap = new Map<
+      string,
+      { problemCount: number; exams: { examId: string; problemCount: number }[] }
+    >();
+    for (const topic of TOPICS) {
+      topicExamMap.set(topic.id, { problemCount: 0, exams: [] });
+    }
+    for (const exam of PRACTICE_EXAMS) {
+      const counts = new Map<string, number>();
+      for (const p of exam.problems) {
+        if (topicExamMap.has(p.topic)) {
+          counts.set(p.topic, (counts.get(p.topic) || 0) + 1);
+        }
+      }
+      for (const [topicId, count] of counts) {
+        const entry = topicExamMap.get(topicId)!;
+        entry.problemCount += count;
+        entry.exams.push({ examId: exam.id, problemCount: count });
+      }
+    }
+
     const nodeList: Node[] = [];
     const edgeList: Edge[] = [];
 
@@ -103,8 +80,8 @@ function ExamTreeFlow() {
     });
 
     TOPICS.forEach((topic) => {
-      const info = topicData.get(topic.id);
-      const totalCount = info?.problemCount ?? 0;
+      const info = topicExamMap.get(topic.id)!;
+      const totalCount = info.problemCount;
 
       nodeList.push({
         id: topic.id,
@@ -116,7 +93,6 @@ function ExamTreeFlow() {
           title: topic.title,
           problemCount: totalCount,
           isExpanded: expandedTopicId === topic.id,
-          hasNext: totalCount > 0,
           onToggle: () => toggleExpand(topic.id),
         },
       });
@@ -129,87 +105,85 @@ function ExamTreeFlow() {
         targetHandle: "left",
         type: "smoothstep",
         style: {
-          stroke:
-            totalCount > 0
-              ? "rgba(52,211,153,0.15)"
-              : "rgba(255,255,255,0.06)",
-          strokeWidth: 1,
+          stroke: expandedTopicId === topic.id
+            ? "rgba(251,191,36,0.25)"
+            : totalCount > 0
+              ? "rgba(255,255,255,0.08)"
+              : "rgba(255,255,255,0.04)",
+          strokeWidth: expandedTopicId === topic.id ? 1.5 : 1,
         },
-        animated: false,
+        animated: expandedTopicId === topic.id,
       });
     });
 
-    if (expandedTopicId !== null && topicData.has(expandedTopicId)) {
-      const info = topicData.get(expandedTopicId)!;
-      info.exams.forEach((examInfo) => {
-        const examNodeId = `exam-${examInfo.examId}`;
-        const exam = PRACTICE_EXAMS.find((e) => e.id === examInfo.examId);
-        if (!exam) return;
+    if (expandedTopicId !== null) {
+      const info = topicExamMap.get(expandedTopicId);
+      if (info) {
+        info.exams.forEach((examInfo) => {
+          const exam = PRACTICE_EXAMS.find((e) => e.id === examInfo.examId);
+          if (!exam) return;
 
-        const examSolvedCount = exam.problems.filter((p) =>
-          isProblemSolved(`${exam.id}-${p.id}`),
-        ).length;
-        const problemProgress = exam.problems.map((p) =>
-          isProblemSolved(`${exam.id}-${p.id}`),
-        );
+          const examNodeId = `exam-${exam.id}`;
+          const solvedCount = exam.problems.filter((p) =>
+            isProblemSolved(`${exam.id}-${p.id}`),
+          ).length;
+          const problemProgress = exam.problems.map((p) =>
+            isProblemSolved(`${exam.id}-${p.id}`),
+          );
 
-        nodeList.push({
-          id: examNodeId,
-          type: "exam",
-          position: { x: 0, y: 0 },
-          data: {
-            examId: exam.id,
-            title: exam.title,
-            solvedCount: examSolvedCount,
-            totalCount: exam.problems.length,
-            problemProgress,
-            parentCategoryId: expandedTopicId,
-            onClick: () => handleExamClick(exam.id),
-          },
+          nodeList.push({
+            id: examNodeId,
+            type: "exam",
+            position: { x: 0, y: 0 },
+            data: {
+              examId: exam.id,
+              title: exam.title,
+              solvedCount,
+              totalCount: exam.problems.length,
+              problemProgress,
+              parentCategoryId: expandedTopicId,
+              onClick: () => handleExamClick(exam.id),
+            },
+          });
+
+          edgeList.push({
+            id: `e-${expandedTopicId}-${examNodeId}`,
+            source: expandedTopicId,
+            target: examNodeId,
+            sourceHandle: "right",
+            targetHandle: "left",
+            type: "smoothstep",
+            label: `${examInfo.problemCount} probleme`,
+            labelStyle: { fontSize: 9, fill: "rgba(255,255,255,0.35)" },
+            labelBgStyle: { fill: "rgba(10,10,20,0.85)" },
+            labelBgPadding: [6, 3] as [number, number],
+            labelBgBorderRadius: 4,
+            style: {
+              stroke:
+                solvedCount === exam.problems.length
+                  ? "rgba(52,211,153,0.18)"
+                  : "rgba(255,255,255,0.05)",
+              strokeWidth: 1,
+            },
+            animated: false,
+          });
         });
-
-        edgeList.push({
-          id: `e-${expandedTopicId}-${examNodeId}`,
-          source: expandedTopicId,
-          target: examNodeId,
-          sourceHandle: "right",
-          targetHandle: "left",
-          type: "smoothstep",
-          label: `${examInfo.problemCount} probleme`,
-          labelStyle: { fontSize: 9, fontWeight: 500, color: "rgba(255,255,255,0.35)" },
-          labelBgStyle: { fill: "rgba(10,10,20,0.85)", rx: 4, ry: 4 },
-          labelBgPadding: [6, 3] as [number, number],
-          labelBgBorderRadius: 4,
-          style: {
-            stroke:
-              examSolvedCount === exam.problems.length
-                ? "rgba(52,211,153,0.18)"
-                : "rgba(255,255,255,0.05)",
-            strokeWidth: 1,
-          },
-          animated: false,
-        });
-      });
+      }
     }
 
-    return getLayoutedElements(nodeList, edgeList, {
-      ringRadiusX: 380,
-      ringRadiusY: 200,
-      nodeRadialOffset: 65,
-      nodeGap: 34,
-    });
-  }, [expandedTopicId, toggleExpand, handleExamClick, isProblemSolved, topicData]);
+    return getLayoutedElements(nodeList, edgeList);
+  }, [expandedTopicId, toggleExpand, handleExamClick, isProblemSolved]);
 
   useEffect(() => {
     if (rf && nodes.length > 0) {
-      rf.fitView({ padding: 0.25, duration: 300 });
+      rf.fitView({ padding: 0.2, duration: 300 });
     }
   }, [nodes.length, expandedTopicId, rf]);
 
   return (
     <div
       className="glass-panel rounded-xl overflow-hidden"
-      style={{ height: 420 }}
+      style={{ height: 520 }}
     >
       <div className="px-4 pt-3 pb-1 flex items-center justify-between pointer-events-none">
         <div className="flex items-center gap-2">
@@ -226,6 +200,7 @@ function ExamTreeFlow() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        fitView
         proOptions={{ hideAttribution: true }}
         minZoom={0.2}
         maxZoom={2}

@@ -37,7 +37,7 @@ export function getLayoutedElements(
   const {
     ringRadiusX = 380,
     ringRadiusY = 200,
-    nodeRadialOffset = 60,
+    nodeRadialOffset = 78,
     nodeGap = 36,
   } = options;
 

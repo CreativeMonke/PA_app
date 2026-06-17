@@ -1,0 +1,72 @@
+{
+  "project": {
+    "name": "PA Restanță Study App",
+    "type": "Vite + React 18 + TypeScript",
+    "styling": "Tailwind CSS 3 + custom CSS variables (dark theme)",
+    "state": "zustand",
+    "animations": "framer-motion",
+    "icons": "lucide-react",
+    "deployment": "Vercel (static SPA)"
+  },
+
+  "codebase_layout": {
+    "root": "PA_app/",
+    "src/data/": "Static data files (quizzes, topics, exams)",
+    "src/types/": "TypeScript interfaces (Topic, QuizQuestion, QuizSet, PracticeExam, etc.)",
+    "src/store/": "Zustand stores (useAppStore, useProgressStore)",
+    "src/pages/": "Page components (LandingPage, LearnPage, PracticePage, OverviewPage)",
+    "src/components/": "Reusable components (layout/, quiz/, simulators/)",
+    "dist/": "Build output (gitignored)"
+  },
+
+  "data_files": {
+    "topics.ts": "10 topics: kmp, bm, dp1, dp2, greedy, bkt, analiza, nedet, prob, regex",
+    "quizzes.ts": "Barrel file aggregating quiz sets from 4 split files",
+    "kmp-bm-quizzes.ts": "KMP + BM quizzes (5 difficulty levels each, 8-10 questions)",
+    "topicQuizzes.ts": "DP1 + DP2 + Greedy quizzes (5 difficulty levels each, 8-10 questions)",
+    "quizSets.ts": "BKT + Analiza + Nedet quizzes (5 difficulty levels each, 8-10 questions)",
+    "prob-regex-quizzes.ts": "Prob + Regex quizzes (5 difficulty levels each, 8-10 questions)",
+    "exams/partiale.ts": "7 partial exams (2019A/B, 2017A/B, 2015A, 2018A/B)",
+    "exams/modele.ts": "10 model exams",
+    "exams/sesiuni.ts": "Session exams",
+    "exams/legacy.ts": "Legacy exams",
+    "exams/index.ts": "Barrel aggregating all exam arrays",
+    "practiceExams.ts": "Re-exports PRACTICE_EXAMS from exams/"
+  },
+
+  "screens_and_features": {
+    "LandingPage": "Topic cards grid, click to start learning, shows progress per topic",
+    "LearnPage": "4-step flow: Theory → Code → Simulator → Quiz. Has difficulty selector for quizzes.",
+    "PracticePage": "Exam listing + problem browser with hints/solution toggle",
+    "OverviewPage": "Progress overview across all topics",
+    "Sidebar": "Topic navigation with completion badges",
+    "Quiz": "Round-based: wrong questions retaken, correct questions skipped. localStorage progress persistence.",
+    "Simulators": "KMP (interactive failure function + search), BM, DP (matrix traversal)"
+  },
+
+  "progress": {
+    "storage": "localStorage key 'pa_progress'",
+    "tracks": ["completedTopics", "passedQuizzes", "solvedProblems"],
+    "scope": "Per-browser only, no sync across devices"
+  },
+
+  "done": [
+    "Initial scaffold: Vite + React + TS + Tailwind + zustand + framer-motion",
+    "Created 10 topic entries with descriptions, keyPoints, codeExamples from course PDFs",
+    "Created 460+ quiz questions across 10 topics, each with 5 difficulty levels (Începător→Expert)",
+    "Quiz retake logic: only wrong questions are re-asked, not all",
+    "Quiz difficulty selector UI in LearnPage",
+    "7 partial exams + 10 model exams with problem statements and solutions transcribed from PDFs",
+    "Progress persisted in localStorage",
+    "Initial commit and push to GitHub, deployed on Vercel"
+  ],
+
+  "pending_features": [],
+  "conventions": {
+    "language": "Romanian for all text content (UI, questions, explanations, code comments)",
+    "data_pattern": "Topics use markdown descriptions, quizzes use QuizSet[] with difficulty levels",
+    "imports": "Use @/ path alias for src/",
+    "types": "All interfaces in src/types/index.ts",
+    "code_comments": "None in component/data files"
+  }
+}

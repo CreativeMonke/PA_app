@@ -153,7 +153,7 @@ function ExamTreeFlow() {
             sourceHandle: "right",
             targetHandle: "left",
             type: "smoothstep",
-            label: `${examInfo.problemCount} probleme`,
+            label: exam.title,
             labelStyle: { fontSize: 9, fill: "rgba(255,255,255,0.35)" },
             labelBgStyle: { fill: "rgba(10,10,20,0.85)" },
             labelBgPadding: [6, 3] as [number, number],

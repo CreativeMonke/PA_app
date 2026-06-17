@@ -193,8 +193,8 @@ function ExamTreeFlow() {
     }
 
     return getLayoutedElements(nodeList, edgeList, {
-      ringRadiusX: 320,
-      ringRadiusY: 170,
+      ringRadiusX: 380,
+      ringRadiusY: 200,
       nodeRadialOffset: 65,
       nodeGap: 34,
     });

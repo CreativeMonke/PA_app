@@ -12,6 +12,7 @@ const SIZE: Record<string, { w: number; h: number }> = {
   topic: { w: 170, h: 62 },
   quiz: { w: 150, h: 30 },
   examCategory: { w: 160, h: 50 },
+  examTopic: { w: 170, h: 44 },
   exam: { w: 170, h: 36 },
 };
 
@@ -73,7 +74,7 @@ export function getLayoutedElements(
   const root = nodes.find((n) => n.type === "root");
   if (root) centers.set(root.id, { x: 0, y: 0 });
 
-  const ringTypes = new Set(["topic", "examCategory"]);
+  const ringTypes = new Set(["topic", "examCategory", "examTopic"]);
   const ringNodes = nodes.filter((n) => ringTypes.has(n.type ?? ""));
   const N = ringNodes.length;
 

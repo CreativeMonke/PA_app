@@ -14,28 +14,32 @@ interface ExamTopicNodeData extends Record<string, unknown> {
 type ExamTopicNodeType = Node<ExamTopicNodeData, "examTopic">;
 
 function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
-  const { icon, title, problemCount, isExpanded, hasNext, onToggle } = data;
+  const { icon, title, problemCount, isExpanded, onToggle } = data;
+  const hasProblems = problemCount > 0;
 
   return (
     <div
       className="rounded-xl cursor-pointer select-none"
       style={{
         padding: "10px 14px",
-        width: 160,
+        width: 170,
         background: isExpanded
-          ? "linear-gradient(180deg, rgba(52,211,153,0.13), rgba(52,211,153,0.05))"
-          : "rgba(255,255,255,0.04)",
+          ? "linear-gradient(180deg, rgba(251,191,36,0.13), rgba(251,191,36,0.05))"
+          : hasProblems
+            ? "linear-gradient(180deg, rgba(251,191,36,0.06), rgba(255,255,255,0.02))"
+            : "rgba(255,255,255,0.03)",
         border: `1px solid ${
-          hasNext
-            ? "rgba(52,211,153,0.35)"
-            : isExpanded
-              ? "rgba(52,211,153,0.2)"
-              : "rgba(255,255,255,0.07)"
+          isExpanded
+            ? "rgba(251,191,36,0.4)"
+            : hasProblems
+              ? "rgba(251,191,36,0.25)"
+              : "rgba(255,255,255,0.06)"
         }`,
-        boxShadow:
-          hasNext
-            ? "0 0 16px rgba(52,211,153,0.12)"
-            : "inset 0 1px 0 rgba(255,255,255,0.04)",
+        boxShadow: isExpanded
+          ? "0 0 20px rgba(251,191,36,0.10), inset 0 1px 0 rgba(251,191,36,0.12)"
+          : hasProblems
+            ? "0 0 12px rgba(251,191,36,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"
+            : "inset 0 1px 0 rgba(255,255,255,0.03)",
         transition: "all 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
       }}
       onClick={onToggle}
@@ -59,38 +63,43 @@ function ExamTopicNodeComponent({ data }: NodeProps<ExamTopicNodeType>) {
       })}
 
       <div className="flex items-center gap-2">
-        <span style={{ fontSize: 16 }}>{icon}</span>
+        <span style={{ fontSize: 18 }}>{icon}</span>
         <span className="text-[11px] font-medium truncate flex-1 min-w-0" style={{ color: "#e2e8f0" }}>
           {title}
         </span>
         <div
           className="flex items-center justify-center shrink-0 rounded"
           style={{
-            padding: "1px 5px",
+            padding: "1px 6px",
             fontSize: 10,
             fontWeight: 600,
-            background: problemCount > 0 ? "rgba(52,211,153,0.15)" : "rgba(255,255,255,0.06)",
-            color: problemCount > 0 ? "var(--color-emerald)" : "rgba(255,255,255,0.3)",
+            background: hasProblems ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.06)",
+            color: hasProblems ? "var(--color-amber)" : "rgba(255,255,255,0.35)",
           }}
         >
           {problemCount}
         </div>
-        <div
-          className="w-3 h-3 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: "rgba(255,255,255,0.05)" }}
-        >
+        {hasProblems && (
           <div
+            className="w-3 h-3 rounded-full flex items-center justify-center shrink-0"
             style={{
-              width: 0,
-              height: 0,
-              borderLeft: "4px solid rgba(255,255,255,0.25)",
-              borderTop: "3px solid transparent",
-              borderBottom: "3px solid transparent",
-              transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+              background: "rgba(255,255,255,0.05)",
               transition: "transform 0.2s",
             }}
-          />
-        </div>
+          >
+            <div
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "4px solid rgba(255,255,255,0.25)",
+                borderTop: "3px solid transparent",
+                borderBottom: "3px solid transparent",
+                transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                transition: "transform 0.2s",
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

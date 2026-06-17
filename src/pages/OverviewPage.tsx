@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
 import ConceptTree from "@/components/overview/ConceptTree";
+import ExamTree from "@/components/overview/ExamTree";
 import { useProgressStore } from "@/store/useProgressStore";
 import { useAppStore } from "@/store/useAppStore";
 import { TOPICS } from "@/data/topics";
@@ -12,7 +13,7 @@ import { pageVariants, staggerContainer, staggerItem } from "@/lib/animations";
 export default function OverviewPage() {
   const navigate = useNavigate();
   const { setMode, setActiveTopicId } = useAppStore();
-  const { completedCount, passedCount, solvedCount, isTopicComplete, isProblemSolved } = useProgressStore();
+  const { completedCount, passedCount, solvedCount, isTopicComplete } = useProgressStore();
 
   const totalTopics = TOPICS.length;
   const totalQuizzes = totalTopics * 5;
@@ -106,56 +107,9 @@ export default function OverviewPage() {
             <ConceptTree nextTopicId={firstIncomplete?.id ?? null} />
           </motion.div>
 
-          {/* Exams progress */}
+          {/* Exam tree graph */}
           <motion.div variants={staggerItem}>
-            <div className="text-xs font-semibold mb-3" style={{ color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Examene de Restanță
-            </div>
-            <div className="flex flex-col gap-3">
-              {PRACTICE_EXAMS.map((exam) => {
-                const solved = exam.problems.filter((p) =>
-                  isProblemSolved(`${exam.id}-${p.id}`)
-                ).length;
-                const pct = Math.round((solved / exam.problems.length) * 100);
-
-                return (
-                  <div key={exam.id} className="glass-panel p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="text-sm font-semibold">{exam.title}</div>
-                        <div className="text-xs" style={{ color: "var(--color-text-dim)" }}>
-                          {solved}/{exam.problems.length} probleme · {exam.totalPoints}p total
-                        </div>
-                      </div>
-                      <div className="text-lg font-bold" style={{ color: pct === 100 ? "var(--color-emerald)" : "var(--color-amber)" }}>
-                        {pct}%
-                      </div>
-                    </div>
-                    <div className="progress-track">
-                      <div className="progress-fill" style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="flex gap-1 mt-3 flex-wrap">
-                      {exam.problems.map((p) => {
-                        const done = isProblemSolved(`${exam.id}-${p.id}`);
-                        return (
-                          <div
-                            key={p.id}
-                            className="text-xs rounded px-2 py-0.5 font-mono"
-                            style={{
-                              background: done ? "rgba(52,211,153,0.12)" : "var(--color-surface-raised)",
-                              border: `1px solid ${done ? "rgba(52,211,153,0.3)" : "var(--color-border)"}`,
-                              color: done ? "var(--color-emerald)" : "var(--color-text-dim)",
-                            }}
-                          >
-                            {p.number}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <ExamTree />
           </motion.div>
 
           {/* Exam readiness */}

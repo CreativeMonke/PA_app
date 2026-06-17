@@ -11,6 +11,8 @@ const SIZE: Record<string, { w: number; h: number }> = {
   root: { w: 120, h: 40 },
   topic: { w: 170, h: 62 },
   quiz: { w: 150, h: 30 },
+  examCategory: { w: 160, h: 50 },
+  exam: { w: 170, h: 36 },
 };
 
 function sizeFor(type?: string) {
@@ -29,6 +31,31 @@ function sideFromAngle(deg: number): Side {
 
 const OPPOSITE: Record<Side, Side> = { top: "bottom", bottom: "top", left: "right", right: "left" };
 
+function positionChildren(
+  parentId: string,
+  children: Node[],
+  centers: Map<string, { x: number; y: number }>,
+  childSizeKey: string,
+  radialOffset: number,
+  gap: number,
+) {
+  const base = centers.get(parentId);
+  if (!base) return;
+  const M = children.length;
+  const ch = SIZE[childSizeKey]?.h ?? 30;
+  const colHalf = ((M - 1) * gap) / 2 + ch / 2;
+  const len = Math.hypot(base.x, base.y) || 1;
+  const ux = base.x / len;
+  const uy = base.y / len;
+  const dist = radialOffset + colHalf;
+  const colX = base.x + ux * dist;
+  const colY = base.y + uy * dist;
+  const startY = colY - ((M - 1) * gap) / 2;
+  children.forEach((node, j) => {
+    centers.set(node.id, { x: colX, y: startY + j * gap });
+  });
+}
+
 export function getLayoutedElements(
   nodes: Node[],
   edges: Edge[],
@@ -46,10 +73,11 @@ export function getLayoutedElements(
   const root = nodes.find((n) => n.type === "root");
   if (root) centers.set(root.id, { x: 0, y: 0 });
 
-  const topicNodes = nodes.filter((n) => n.type === "topic");
-  const N = topicNodes.length;
+  const ringTypes = new Set(["topic", "examCategory"]);
+  const ringNodes = nodes.filter((n) => ringTypes.has(n.type ?? ""));
+  const N = ringNodes.length;
 
-  topicNodes.forEach((node, i) => {
+  ringNodes.forEach((node, i) => {
     const angle = (-90 + (i * 360) / Math.max(N, 1)) * (Math.PI / 180);
     centers.set(node.id, {
       x: ringRadiusX * Math.cos(angle),
@@ -57,6 +85,7 @@ export function getLayoutedElements(
     });
   });
 
+  // Quiz nodes: parent key from node.id
   const quizzesByTopic = new Map<string, Node[]>();
   nodes
     .filter((n) => n.type === "quiz")
@@ -66,22 +95,23 @@ export function getLayoutedElements(
       arr.push(node);
       quizzesByTopic.set(topicKey, arr);
     });
-
   quizzesByTopic.forEach((quizzes, topicKey) => {
-    const base = centers.get(topicKey);
-    if (!base) return;
-    const M = quizzes.length;
-    const colHalf = ((M - 1) * nodeGap) / 2 + SIZE.quiz.h / 2;
-    const len = Math.hypot(base.x, base.y) || 1;
-    const ux = base.x / len;
-    const uy = base.y / len;
-    const dist = nodeRadialOffset + colHalf;
-    const colX = base.x + ux * dist;
-    const colY = base.y + uy * dist;
-    const startY = colY - ((M - 1) * nodeGap) / 2;
-    quizzes.forEach((node, j) => {
-      centers.set(node.id, { x: colX, y: startY + j * nodeGap });
+    positionChildren(topicKey, quizzes, centers, "quiz", nodeRadialOffset, nodeGap);
+  });
+
+  // Exam nodes: parent key from data.parentCategoryId
+  const examsByCategory = new Map<string, Node[]>();
+  nodes
+    .filter((n) => n.type === "exam")
+    .forEach((node) => {
+      const parentId = (node.data as Record<string, unknown>)?.parentCategoryId as string | undefined;
+      if (!parentId) return;
+      const arr = examsByCategory.get(parentId) ?? [];
+      arr.push(node);
+      examsByCategory.set(parentId, arr);
     });
+  examsByCategory.forEach((exams, catKey) => {
+    positionChildren(catKey, exams, centers, "exam", nodeRadialOffset, nodeGap);
   });
 
   const layoutedNodes = nodes.map((node) => {

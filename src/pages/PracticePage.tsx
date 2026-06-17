@@ -262,15 +262,15 @@ function topicLabel(topicId: string): string {
 }
 
 function markdownToHtml(md: string): string {
-  return md
+  const html = md
+    .replace(/^```[\w]*\n([\s\S]*?)```$/gm, (_: string, code: string) =>
+      `<pre><code>${escHtml(code)}</code></pre>`
+    )
     .replace(/^## (.+)$/gm, "<h2>$1</h2>")
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
     .replace(/^\*\*\[(.+?)\](.+?)\*\*$/gm, "<h3><strong>[$1]$2</strong></h3>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`\n]+)`/g, "<code>$1</code>")
-    .replace(/^```[\w]*\n([\s\S]*?)```$/gm, (_: string, code: string) =>
-      `<pre><code>${escHtml(code)}</code></pre>`
-    )
     .replace(/^---$/gm, "<hr>")
     .replace(/^\| (.+) \|$/gm, (line: string) => {
       const isHeader = line.includes("---");
@@ -282,8 +282,17 @@ function markdownToHtml(md: string): string {
     .replace(/^\d\. (.+)$/gm, "<li>$1</li>")
     .replace(/(<li>.*?<\/li>\n?)+/gs, (l: string) => `<ol>${l}</ol>`)
     .replace(/^\* (.+)$/gm, "<li>$1</li>")
-    .replace(/(<li>.*?<\/li>\n?)+/gs, (l: string) => `<ul>${l}</ul>`)
-    .replace(/\n\n/g, "\n");
+    .replace(/(<li>.*?<\/li>\n?)+/gs, (l: string) => `<ul>${l}</ul>`);
+
+  return html
+    .split(/\n\n+/)
+    .map((block) => {
+      const trimmed = block.trim();
+      if (!trimmed) return "";
+      if (/^<(h[1-6]|ul|ol|pre|table|hr|div|p)/.test(trimmed)) return trimmed;
+      return `<p>${trimmed.replace(/\n/g, " ")}</p>`;
+    })
+    .join("\n");
 }
 
 function escHtml(s: string) {

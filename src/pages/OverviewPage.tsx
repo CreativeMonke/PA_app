@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
+import ConceptTree from "@/components/overview/ConceptTree";
 import { useProgressStore } from "@/store/useProgressStore";
 import { useAppStore } from "@/store/useAppStore";
 import { TOPICS } from "@/data/topics";
@@ -11,12 +12,13 @@ import { pageVariants, staggerContainer, staggerItem } from "@/lib/animations";
 export default function OverviewPage() {
   const navigate = useNavigate();
   const { setMode, setActiveTopicId } = useAppStore();
-  const { completedCount, passedCount, solvedCount, isTopicComplete, isQuizPassed, isProblemSolved } = useProgressStore();
+  const { completedCount, passedCount, solvedCount, isTopicComplete, isProblemSolved } = useProgressStore();
 
   const totalTopics = TOPICS.length;
+  const totalQuizzes = totalTopics * 5;
   const totalProblems = PRACTICE_EXAMS.reduce((s, e) => s + e.problems.length, 0);
   const overallPct = Math.round(
-    ((completedCount() + passedCount() + solvedCount()) / (totalTopics * 2 + totalProblems)) * 100
+    ((completedCount() + passedCount() + solvedCount()) / (totalTopics + totalQuizzes + totalProblems)) * 100
   );
 
   const firstIncomplete = TOPICS.find((t) => !isTopicComplete(t.id));
@@ -61,7 +63,7 @@ export default function OverviewPage() {
               <StatRow
                 label="Quiz-uri trecute"
                 value={passedCount()}
-                total={totalTopics}
+                total={totalQuizzes}
                 color="var(--color-emerald)"
               />
               <StatRow
@@ -99,58 +101,9 @@ export default function OverviewPage() {
             </motion.div>
           )}
 
-          {/* Topics grid */}
+          {/* Concept tree graph */}
           <motion.div variants={staggerItem}>
-            <div className="text-xs font-semibold mb-3" style={{ color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Teme
-            </div>
-            <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
-              {TOPICS.map((topic) => {
-                const complete = isTopicComplete(topic.id);
-                const quizOk = isQuizPassed(topic.id);
-
-                return (
-                  <button
-                    key={topic.id}
-                    className="glass-panel p-4 text-left flex gap-3 items-start cursor-pointer"
-                    onClick={() => {
-                      setMode("learn");
-                      setActiveTopicId(topic.id);
-                      navigate("/learn");
-                    }}
-                  >
-                    <span className="text-xl flex-shrink-0">{topic.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate">{topic.title}</div>
-                      <div className="text-xs truncate mb-2" style={{ color: "var(--color-text-dim)" }}>
-                        {topic.subtitle}
-                      </div>
-                      <div className="flex gap-1.5 flex-wrap">
-                        {complete ? (
-                          <span className="badge badge--emerald" style={{ fontSize: 10 }}>
-                            <CheckCircle2 size={9} className="mr-0.5" /> Complet
-                          </span>
-                        ) : (
-                          <span className="badge badge--amber" style={{ fontSize: 10, opacity: 0.6 }}>
-                            <Circle size={9} className="mr-0.5" /> În progres
-                          </span>
-                        )}
-                        {quizOk && !complete && (
-                          <span className="badge badge--cyan" style={{ fontSize: 10 }}>
-                            Quiz ✓
-                          </span>
-                        )}
-                        {topic.hasSimulator && (
-                          <span className="badge badge--violet" style={{ fontSize: 10 }}>
-                            Simulator
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            <ConceptTree nextTopicId={firstIncomplete?.id ?? null} />
           </motion.div>
 
           {/* Exams progress */}

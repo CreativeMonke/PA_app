@@ -12,6 +12,7 @@ import { TOPICS, getTopicById } from "@/data/topics";
 import { QUIZZES } from "@/data/quizzes";
 import type { QuizSet } from "@/types";
 import { pageVariants } from "@/lib/animations";
+import { DIFFICULTIES } from "@/data/difficultyConfig";
 
 type Step = "theory" | "code" | "simulator" | "quiz";
 
@@ -24,7 +25,7 @@ const STEP_CONFIG: { id: Step; label: string; icon: React.ElementType }[] = [
 
 export default function LearnPage() {
   const { activeTopicId, setActiveTopicId } = useAppStore();
-  const { isTopicComplete, markTopicComplete, isQuizPassed } = useProgressStore();
+  const { isTopicComplete, isDifficultyPassed, markQuizPassed } = useProgressStore();
   const [step, setStep] = useState<Step>("theory");
   const [activeQuizIndex, setActiveQuizIndex] = useState(0);
 
@@ -41,11 +42,13 @@ export default function LearnPage() {
 
   const currentTopicIndex = TOPICS.findIndex((t) => t.id === activeTopicId);
   const nextTopic = TOPICS[currentTopicIndex + 1];
-  const quizPassed = isQuizPassed(activeTopicId);
   const complete = isTopicComplete(activeTopicId);
+  const activeDifficulty = quizSets[activeQuizIndex]?.difficulty ?? "";
+  const alreadyPassed = isDifficultyPassed(activeTopicId, activeDifficulty);
 
   function handleQuizPass() {
-    if (!complete) markTopicComplete(activeTopicId);
+    const difficulty = quizSets[activeQuizIndex]?.difficulty;
+    if (difficulty) markQuizPassed(activeTopicId, difficulty);
   }
 
   const stepsForTopic = STEP_CONFIG.filter(
@@ -124,7 +127,7 @@ export default function LearnPage() {
                   activeQuizIndex={activeQuizIndex}
                   onSelectQuiz={setActiveQuizIndex}
                   onPass={handleQuizPass}
-                  alreadyPassed={quizPassed}
+                  alreadyPassed={alreadyPassed}
                 />
               )}
             </motion.div>
@@ -169,7 +172,7 @@ export default function LearnPage() {
             )}
 
             {/* Next topic */}
-            {nextTopic && quizPassed && (
+            {nextTopic && complete && (
               <button
                 className="pa-btn pa-btn--primary"
                 style={{ fontSize: 12, padding: "6px 14px" }}
@@ -254,7 +257,9 @@ function QuizStep({ topicId, quizSets, activeQuizIndex, onSelectQuiz, onPass, al
   onPass(): void;
   alreadyPassed: boolean;
 }) {
+  const { isDifficultyPassed, getPassedQuizCount } = useProgressStore();
   const activeQuiz = quizSets[activeQuizIndex];
+  const passedCount = getPassedQuizCount(topicId);
 
   if (quizSets.length === 0) {
     return (
@@ -271,29 +276,52 @@ function QuizStep({ topicId, quizSets, activeQuizIndex, onSelectQuiz, onPass, al
     <div className="max-w-xl">
       <div className="step-label"><span className="step-number">4</span>Quiz</div>
 
+      {passedCount > 0 && (
+        <div className="text-xs mb-3" style={{ color: "var(--color-emerald)" }}>
+          <CheckCircle2 size={11} className="inline mr-1" />
+          {passedCount}/{quizSets.length} quiz-uri trecute
+          {passedCount >= 3 && " — Tema completată!"}
+        </div>
+      )}
+
       {/* Difficulty selector */}
       {quizSets.length > 1 && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {quizSets.map((qs, i) => (
-            <button
-              key={i}
-              className={`pa-btn ${i === activeQuizIndex ? "pa-btn--secondary" : "pa-btn--ghost"}`}
-              style={{
-                fontSize: 12,
-                padding: "4px 12px",
-                borderColor: i === activeQuizIndex ? "var(--color-border-raised)" : "transparent",
-              }}
-              onClick={() => onSelectQuiz(i)}
-            >
-              {qs.difficulty}
-            </button>
-          ))}
+          {quizSets.map((qs, i) => {
+            const passed = isDifficultyPassed(topicId, qs.difficulty);
+            const diffCfg = DIFFICULTIES[i] ?? DIFFICULTIES[0];
+            const active = i === activeQuizIndex;
+            return (
+              <button
+                key={i}
+                className={`pa-btn ${active ? "pa-btn--secondary" : "pa-btn--ghost"}`}
+                style={{
+                  fontSize: 12,
+                  padding: "4px 12px",
+                  borderLeft: `3px solid ${active ? diffCfg.color : "transparent"}`,
+                  borderColor: active ? "var(--color-border-raised)" : "transparent",
+                  background: active
+                    ? `linear-gradient(90deg, ${diffCfg.bgColor}, rgba(255,255,255,0.03))`
+                    : "transparent",
+                }}
+                onClick={() => onSelectQuiz(i)}
+              >
+                <span
+                  className="w-2 h-2 rounded-full inline-block mr-1.5 shrink-0"
+                  style={{ background: diffCfg.color }}
+                />
+                {passed && <CheckCircle2 size={11} className="mr-1" style={{ color: "var(--color-emerald)" }} />}
+                {qs.difficulty}
+              </button>
+            );
+          })}
         </div>
       )}
 
       <div className="glass-panel p-5">
         {activeQuiz ? (
           <Quiz
+            key={`${topicId}-${activeQuizIndex}`}
             topicId={topicId}
             questions={activeQuiz.questions}
             onPass={onPass}

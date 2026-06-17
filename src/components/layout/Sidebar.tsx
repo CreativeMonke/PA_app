@@ -32,14 +32,15 @@ export default function Sidebar() {
 
 function LearnSidebar() {
   const { activeTopicId, setActiveTopicId } = useAppStore();
-  const { isTopicComplete, isQuizPassed } = useProgressStore();
+  const { isTopicComplete, getPassedQuizCount } = useProgressStore();
 
   return (
     <>
       <div className="sidebar-section-label">Teme</div>
       {TOPICS.map((topic) => {
         const complete = isTopicComplete(topic.id);
-        const quizPassed = isQuizPassed(topic.id);
+        const count = getPassedQuizCount(topic.id);
+        const inProgress = count > 0 && count < 3;
         const active = activeTopicId === topic.id;
 
         return (
@@ -65,8 +66,10 @@ function LearnSidebar() {
             </div>
             {complete ? (
               <CheckCircle2 size={14} style={{ color: "var(--color-emerald)", flexShrink: 0 }} />
-            ) : quizPassed ? (
-              <div className="sidebar-dot sidebar-dot--active" style={{ flexShrink: 0 }} />
+            ) : inProgress ? (
+              <span className="text-xs font-mono" style={{ color: "var(--color-amber)", flexShrink: 0 }}>
+                {count}/5
+              </span>
             ) : (
               <Circle size={13} style={{ color: "var(--color-text-dim)", flexShrink: 0 }} />
             )}

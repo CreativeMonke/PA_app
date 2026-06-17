@@ -2,18 +2,18 @@ import { create } from "zustand";
 import type { ProgressData } from "@/types";
 
 interface ProgressState {
-  completedTopics: Set<string>;
   passedQuizzes: Set<string>;
   solvedProblems: Set<string>;
   initialized: boolean;
 
   init(): void;
-  markTopicComplete(id: string): void;
-  markQuizPassed(id: string): void;
+  markQuizPassed(topicId: string, difficulty: string): void;
   markProblemSolved(id: string): void;
+  isDifficultyPassed(topicId: string, difficulty: string): boolean;
+  isQuizPassed(topicId: string): boolean;
   isTopicComplete(id: string): boolean;
-  isQuizPassed(id: string): boolean;
   isProblemSolved(id: string): boolean;
+  getPassedQuizCount(topicId: string): number;
   completedCount(): number;
   passedCount(): number;
   solvedCount(): number;
@@ -22,12 +22,11 @@ interface ProgressState {
 const STORAGE_KEY = "pa_progress";
 
 function persist(state: {
-  completedTopics: Set<string>;
   passedQuizzes: Set<string>;
   solvedProblems: Set<string>;
 }) {
   const data: ProgressData = {
-    completedTopics: [...state.completedTopics],
+    completedTopics: [],
     passedQuizzes: [...state.passedQuizzes],
     solvedProblems: [...state.solvedProblems],
   };
@@ -35,7 +34,6 @@ function persist(state: {
 }
 
 export const useProgressStore = create<ProgressState>((set, get) => ({
-  completedTopics: new Set(),
   passedQuizzes: new Set(),
   solvedProblems: new Set(),
   initialized: false,
@@ -46,7 +44,6 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
       if (raw) {
         const data: ProgressData = JSON.parse(raw);
         set({
-          completedTopics: new Set(data.completedTopics ?? []),
           passedQuizzes: new Set(data.passedQuizzes ?? []),
           solvedProblems: new Set(data.solvedProblems ?? []),
           initialized: true,
@@ -59,17 +56,9 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
     set({ initialized: true });
   },
 
-  markTopicComplete(id) {
+  markQuizPassed(topicId, difficulty) {
     set((s) => {
-      const completedTopics = new Set(s.completedTopics).add(id);
-      persist({ ...s, completedTopics });
-      return { completedTopics };
-    });
-  },
-
-  markQuizPassed(id) {
-    set((s) => {
-      const passedQuizzes = new Set(s.passedQuizzes).add(id);
+      const passedQuizzes = new Set(s.passedQuizzes).add(`${topicId}|${difficulty}`);
       persist({ ...s, passedQuizzes });
       return { passedQuizzes };
     });
@@ -83,10 +72,43 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
     });
   },
 
-  isTopicComplete: (id) => get().completedTopics.has(id),
-  isQuizPassed: (id) => get().passedQuizzes.has(id),
+  isDifficultyPassed(topicId, difficulty) {
+    return get().passedQuizzes.has(`${topicId}|${difficulty}`);
+  },
+
+  isQuizPassed(topicId) {
+    return get().getPassedQuizCount(topicId) >= 3;
+  },
+
+  isTopicComplete(id) {
+    return get().getPassedQuizCount(id) >= 3;
+  },
+
   isProblemSolved: (id) => get().solvedProblems.has(id),
-  completedCount: () => get().completedTopics.size,
+
+  getPassedQuizCount(topicId) {
+    const prefix = `${topicId}|`;
+    let count = 0;
+    for (const key of get().passedQuizzes) {
+      if (key.startsWith(prefix)) count++;
+    }
+    return count;
+  },
+
+  completedCount() {
+    const counts = new Map<string, number>();
+    for (const key of get().passedQuizzes) {
+      const [topicId] = key.split("|");
+      counts.set(topicId, (counts.get(topicId) ?? 0) + 1);
+    }
+    let total = 0;
+    for (const c of counts.values()) {
+      if (c >= 3) total++;
+    }
+    return total;
+  },
+
   passedCount: () => get().passedQuizzes.size,
+
   solvedCount: () => get().solvedProblems.size,
 }));

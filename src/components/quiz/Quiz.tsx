@@ -16,7 +16,19 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
   const [roundIndex, setRoundIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [wrongInRound, setWrongInRound] = useState<Set<number>>(new Set());
-  const [passed, setPassed] = useState(alreadyPassed ?? false);
+  const [passed, setPassed] = useState(false);
+  const [retaking, setRetaking] = useState(false);
+
+  const showPassed = (passed || alreadyPassed) && !retaking;
+
+  function resetQuiz() {
+    setRound(allIndices);
+    setRoundIndex(0);
+    setSelected(null);
+    setWrongInRound(new Set());
+    setPassed(false);
+    setRetaking(true);
+  }
 
   const q = questions[round[roundIndex]];
   const answered = selected !== null;
@@ -37,6 +49,7 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
     } else {
       if (wrongInRound.size === 0) {
         setPassed(true);
+        setRetaking(false);
         onPass();
       } else {
         const nextRound = [...wrongInRound];
@@ -48,7 +61,7 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
     }
   }
 
-  if (passed) {
+  if (showPassed) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
@@ -62,6 +75,9 @@ export default function Quiz({ topicId: _topicId, questions, onPass, alreadyPass
         <div className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           Toate {questions.length} întrebări corecte.
         </div>
+        <button className="pa-btn pa-btn--secondary mt-2" onClick={resetQuiz}>
+          <RotateCcw size={13} className="mr-1" /> Retake Quiz
+        </button>
       </motion.div>
     );
   }
